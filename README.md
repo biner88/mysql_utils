@@ -155,12 +155,15 @@ Transaction support
 
 ```yaml
 await db.startTrans();
-await db.delete(
+var res1 = await db.delete(
   table:'table',
   where: {'id':1}
 );
-await db.rollback();
-//await db.commit();
+if(res1>0){
+  await db.commit();
+}else{
+  await db.rollback();
+}
 ```
 
 #### isConnectionAlive

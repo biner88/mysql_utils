@@ -1,6 +1,10 @@
+## [1.0.2]
+
+* Update README.md.
+
 ## [1.0.1]
 
-* Update README.md & pubspec.yaml. PUB POINTS to 130.
+* Update README.md & pubspec.yaml. PUB POINTS to 120.
 
 ## [1.0.0]
 

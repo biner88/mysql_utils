@@ -10,7 +10,7 @@ Flutter [mysql1](https://pub.dev/packages/mysql1) plugin util, Use mysql1 easily
 
 ```yaml
 dependencies:
-  mysql_utils: ^latest
+  mysql_utils: ^1.0.2
 ```
 
 ### APIs
@@ -51,6 +51,10 @@ Query one data
 var row = await db.getOne(
   table: 'table',
   fields: '*',
+  //group: 'name',
+  //having: 'name',
+  //order: 'id desc',
+  //limit: 10,//limit(10) or limit('10 ,100')
   where: {'email': 'xxx@google.com'},
 );
 print(row);
@@ -65,6 +69,10 @@ Query multiple data
 var row = await db.getAll(
   table: 'table',
   fields: '*',
+  //group: 'name',
+  //having: 'name',
+  //order: 'id desc',
+  //limit: 10,//limit(10) or limit('10 ,100')
   where: {'email': 'xxx@google.com','id': ['between', '1,4'],'email': ['=', 'sss@google.com'],'news_title': ['like', '%name%'],'user_id': ['>', 1]},
 );
 print(row);
@@ -146,6 +154,9 @@ Statistical data
 await db.count(
   table: 'table',
   fields: '*',
+  //group: 'name',
+  //having: 'name',
+  //debug: false,
 );
 ```
 

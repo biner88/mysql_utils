@@ -338,6 +338,9 @@ class MysqlUtils {
   /// await db.count(
   ///   table: 'table',
   ///   fields: '*',
+  ///   group: 'name',
+  ///   having: 'name',
+  ///   debug: false,
   /// );
   ///```
   Future<int> count({
@@ -375,6 +378,11 @@ class MysqlUtils {
   /// await db.select(
   ///   table: 'table',
   ///   fields: '*',
+  ///   group: 'name',
+  ///   having: 'name',
+  ///   order: 'id desc',
+  ///   limit: 10,//limit(10) or limit('10 ,100')
+  ///   debug: false,
   ///   where: {'email': 'xxx@google.com','id': ['between', '1,4'],'email': ['=', 'sss@google.com'],'news_title': ['like', '%name%'],'user_id': ['>', 1]},
   /// );
   ///```
@@ -415,6 +423,11 @@ class MysqlUtils {
   /// await db.find(
   ///   table: 'table',
   ///   fields: '*',
+  ///   group: 'name',
+  ///   having: 'name',
+  ///   order: 'id desc',
+  ///   limit: 10,//limit(10) or limit('10 ,100')
+  ///   debug: false,
   ///   where: {'email': 'xxx@google.com'},
   /// );
   ///```

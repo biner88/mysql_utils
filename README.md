@@ -43,6 +43,16 @@ dependencies:
 );
 ```
 
+#### query
+
+Native query
+
+```yaml
+var row = await db
+    .query('select id from Product where id=? or description like ?', [1, 'ce%']);
+print(row);
+`````
+
 #### getOne
 
 Query one data
@@ -54,7 +64,24 @@ var row = await db.getOne(
   //group: 'name',
   //having: 'name',
   //order: 'id desc',
-  //limit: 10,//limit(10) or limit('10 ,100')
+  //limit: 10,//10 or '10 ,100'
+  where: {'email': 'xxx@google.com'},
+);
+print(row);
+```
+
+#### getOne
+
+Query one data
+
+```yaml
+var row = await db.getOne(
+  table: 'table',
+  fields: '*',
+  //group: 'name',
+  //having: 'name',
+  //order: 'id desc',
+  //limit: 10,//10 or '10 ,100'
   where: {'email': 'xxx@google.com'},
 );
 print(row);
@@ -72,8 +99,16 @@ var row = await db.getAll(
   //group: 'name',
   //having: 'name',
   //order: 'id desc',
-  //limit: 10,//limit(10) or limit('10 ,100')
-  where: {'email': 'xxx@google.com','id': ['between', '1,4'],'email': ['=', 'sss@google.com'],'news_title': ['like', '%name%'],'user_id': ['>', 1]},
+  //limit: 10,//10 or '10 ,100'
+  where: {
+    'email': 'xxx@dd.com',
+    //'id': ['notbetween', '1,4'],
+    //'id': ['between', '1,4'],
+    //'id': ['in', [1,2,3]],
+    //'email': ['=', 'sss@cc.com'],
+    //'news_title': ['like', '%name%'],
+    //'user_id': ['>', 1],
+  },
 );
 print(row);
 ```
@@ -105,7 +140,7 @@ Add multiple data
         'telphone': '13888888888',
         'create_time': 1111111,
         'update_time': 12121212,
-        'email': 'biner@dd.com'
+        'email': 'teenagex@dd.com'
       },
       {
         'telphone': '13881231238',
@@ -128,7 +163,7 @@ await db.update(
     'telphone': '1231',
     'create_time': 12,
     'update_time': 12121212,
-    'email': 'biner@dd.com'
+    'email': 'teenagex@dd.com'
   },
   where:{
   'id':1,
@@ -156,7 +191,39 @@ await db.count(
   fields: '*',
   //group: 'name',
   //having: 'name',
-  //debug: false,
+);
+```
+
+#### avg
+
+```yaml
+await db.avg(
+  table: 'table',
+  fields: 'price',
+  //group: 'name',
+  //having: 'name',
+);
+```
+
+#### min
+
+```yaml
+await db.min(
+  table: 'table',
+  fields: 'price',
+  //group: 'name',
+  //having: 'name',
+);
+```
+
+#### max
+
+```yaml
+await db.max(
+  table: 'table',
+  fields: 'price',
+  //group: 'name',
+  //having: 'name',
 );
 ```
 
@@ -192,4 +259,11 @@ Create a new connection
 
 ```yaml
 var newDb = await db.createConnection();
+```
+
+#### test
+
+```
+cd example
+dart run
 ```

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:mysql1/mysql1.dart';
 // import 'package:mysql1/src/single_connection.dart';
+export 'package:mysql1/mysql1.dart';
 
 ///mysql helper
 class MysqlUtils {
@@ -341,6 +342,9 @@ class MysqlUtils {
   ///   group: 'name',
   ///   having: 'name',
   ///   debug: false,
+  ///   where:{
+  ///   'id':['>',1],
+  ///   }
   /// );
   ///```
   Future<int> count({
@@ -375,13 +379,145 @@ class MysqlUtils {
   }
 
   ///```
+  /// await db.avg(
+  ///   table: 'table',
+  ///   fields: '*',
+  ///   group: 'name',
+  ///   having: 'name',
+  ///   debug: false,
+  ///   where:{
+  ///   'id':['>',1],
+  ///   }
+  /// );
+  ///```
+  Future<double> avg({
+    required String table,
+    fields = '',
+    where = const {},
+    group = '',
+    having = '',
+    debug = false,
+  }) async {
+    try {
+      if (group != '') group = 'GROUP BY $group';
+      if (having != '') having = 'HAVING $having';
+
+      if (fields == '') throw 'fields cant be empty';
+
+      var whp = _whereParse(where);
+      var _where = whp['where'];
+      var _values = whp['values'];
+
+      table = _tableParse(table);
+
+      var results = await query(
+          'SELECT AVG($fields) as _avg FROM $table $_where $group $having',
+          _values,
+          debug: debug);
+
+      return _resultFormat(results)[0]['_avg'];
+    } catch (e) {
+      _errorLog(e.toString());
+      close();
+      return 0;
+    }
+  }
+
+  ///```
+  /// await db.max(
+  ///   table: 'table',
+  ///   fields: '*',
+  ///   group: 'name',
+  ///   having: 'name',
+  ///   debug: false,
+  ///   where:{
+  ///   'id':['>',1],
+  ///   }
+  /// );
+  ///```
+  Future<double> max({
+    required String table,
+    fields = '',
+    where = const {},
+    group = '',
+    having = '',
+    debug = false,
+  }) async {
+    try {
+      if (group != '') group = 'GROUP BY $group';
+      if (having != '') having = 'HAVING $having';
+      if (fields == '') throw 'fields cant be empty';
+
+      var whp = _whereParse(where);
+      var _where = whp['where'];
+      var _values = whp['values'];
+
+      table = _tableParse(table);
+
+      var results = await query(
+          'SELECT max($fields) as _max FROM $table $_where $group $having',
+          _values,
+          debug: debug);
+
+      return _resultFormat(results)[0]['_max'];
+    } catch (e) {
+      _errorLog(e.toString());
+      close();
+      return 0;
+    }
+  }
+
+  ///```
+  /// await db.min(
+  ///   table: 'table',
+  ///   fields: '*',
+  ///   group: 'name',
+  ///   having: 'name',
+  ///   debug: false,
+  ///   where:{
+  ///   'id':['>',1],
+  ///   }
+  /// );
+  ///```
+  Future<double> min({
+    required String table,
+    fields = '',
+    where = const {},
+    group = '',
+    having = '',
+    debug = false,
+  }) async {
+    try {
+      if (group != '') group = 'GROUP BY $group';
+      if (having != '') having = 'HAVING $having';
+      if (fields == '') throw 'fields cant be empty';
+      var whp = _whereParse(where);
+      var _where = whp['where'];
+      var _values = whp['values'];
+
+      table = _tableParse(table);
+
+      var results = await query(
+          'SELECT MIN($fields) as _min FROM $table $_where $group $having',
+          _values,
+          debug: debug);
+
+      return _resultFormat(results)[0]['_min'];
+    } catch (e) {
+      _errorLog(e.toString());
+      close();
+      return 0;
+    }
+  }
+
+  ///```
   /// await db.select(
   ///   table: 'table',
   ///   fields: '*',
   ///   group: 'name',
   ///   having: 'name',
   ///   order: 'id desc',
-  ///   limit: 10,//limit(10) or limit('10 ,100')
+  ///   limit: 10,//10 or '10 ,100'
   ///   debug: false,
   ///   where: {'email': 'xxx@google.com','id': ['between', '1,4'],'email': ['=', 'sss@google.com'],'news_title': ['like', '%name%'],'user_id': ['>', 1]},
   /// );
@@ -426,7 +562,6 @@ class MysqlUtils {
   ///   group: 'name',
   ///   having: 'name',
   ///   order: 'id desc',
-  ///   limit: 10,//limit(10) or limit('10 ,100')
   ///   debug: false,
   ///   where: {'email': 'xxx@google.com'},
   /// );
@@ -459,11 +594,16 @@ class MysqlUtils {
 
   String _tableParse(String table) {
     var _table = '';
-    if (table.contains(_prefix)) {
-      _table = '`' + table + '`';
+    if (table.contains(',')) {
+      _table = table;
     } else {
-      _table = '`' + _prefix + table + '`';
+      if (table.contains(_prefix)) {
+        _table = '`' + table + '`';
+      } else {
+        _table = '`' + _prefix + table + '`';
+      }
     }
+
     return _table;
   }
 
@@ -519,25 +659,44 @@ class MysqlUtils {
           if (_keys == '') {
             _keys = key + '= ?';
           } else {
-            _keys += ' and ' + key + '= ?';
+            _keys += ' AND ' + key + '= ?';
           }
           _vals.add(value);
         }
         if (value is List) {
-          if (value.length == 2) {
-            if (_keys == '') {
-              _keys = key + '= ?';
-            } else {
-              _keys += ' and ' + key + ' ' + value[0] + ' ?';
-            }
-            _vals.add(value[1]);
-          } else if (value.length == 3) {
-            if (_keys == '') {
-              _keys = key + '= ?';
-            } else {
-              _keys += ' and ' + value[1] + ' ' + key + ' ' + value[0] + ' ?';
-            }
-            _vals.add(value[2]);
+          switch (value[0]) {
+            case 'in':
+              if (_keys == '') {
+                _keys = key + ' IN(${value[1].join(',')})';
+              } else {
+                _keys += ' AND ' + key + ' IN(${value[1].join(',')})';
+              }
+              break;
+            case 'between':
+              if (_keys == '') {
+                _keys = key + ' BETWEEN ? AND ?';
+              } else {
+                _keys += ' AND ' + key + ' BETWEEN ? AND ?';
+              }
+              _vals.add(value[1]);
+              _vals.add(value[2]);
+              break;
+            case 'notbetween':
+              if (_keys == '') {
+                _keys = key + ' NOT BETWEEN ? AND ?';
+              } else {
+                _keys += ' AND ' + key + ' NOT BETWEEN ? AND ?';
+              }
+              _vals.add(value[1]);
+              _vals.add(value[2]);
+              break;
+            default:
+              if (_keys == '') {
+                _keys = key + ' ' + value[0] + ' ?';
+              } else {
+                _keys += ' AND ' + key + ' ' + value[0] + ' ?';
+              }
+              _vals.add(value[1]);
           }
         }
       });
@@ -555,8 +714,8 @@ class MysqlUtils {
       {debug = false}) async {
     var queryStr = '$sql  $values';
     queryTimes++;
-    var res = await (await conn).query(sql, values);
     if (debug) _sqlLog(queryStr);
+    var res = await (await conn).query(sql, values);
     return res;
   }
 
@@ -565,8 +724,8 @@ class MysqlUtils {
       {debug = false}) async {
     var queryStr = '$sql  $values';
     queryTimes++;
-    var res = await (await conn).queryMulti(sql, values);
     if (debug) _sqlLog(queryStr);
+    var res = await (await conn).queryMulti(sql, values);
     return res;
   }
 

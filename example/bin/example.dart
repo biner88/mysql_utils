@@ -62,8 +62,8 @@ Future main() async {
     fields: '*',
     where: {
       // 'email': 'xxx@google.com',
-      // 'id': ['between', '1,4'],
-      //'id': ['notbetween', '1,4'],
+      // 'id': ['between', 0, 1],
+      // 'id': ['notbetween', 0, 2],
       // 'email2': ['=', 'sss@google.com'],
       // 'news_title': ['like', '%name%'],
       'id': ['>', 1],

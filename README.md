@@ -102,8 +102,8 @@ var row = await db.getAll(
   //limit: 10,//10 or '10 ,100'
   where: {
     'email': 'xxx@dd.com',
-    //'id': ['notbetween', '1,4'],
-    //'id': ['between', '1,4'],
+    //'id': ['between', 0, 1],
+    //'id': ['notbetween', 0, 2],
     //'id': ['in', [1,2,3]],
     //'email': ['=', 'sss@cc.com'],
     //'news_title': ['like', '%name%'],

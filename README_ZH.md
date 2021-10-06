@@ -88,6 +88,7 @@ var row = await db.getAll(
     //'id': ['between', 0, 1],
     //'id': ['notbetween', 0, 2],
     //'id': ['in', [1,2,3]],
+    //'id': ['notin', [1,2,3]],
     //'email': ['=', 'sss@cc.com'],
     //'news_title': ['like', '%name%'],
     //'user_id': ['>', 1],

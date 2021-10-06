@@ -672,6 +672,13 @@ class MysqlUtils {
                 _keys += ' AND ' + key + ' IN(${value[1].join(',')})';
               }
               break;
+            case 'notin':
+              if (_keys == '') {
+                _keys = key + ' NOT IN(${value[1].join(',')})';
+              } else {
+                _keys += ' AND ' + key + ' NOT IN(${value[1].join(',')})';
+              }
+              break;
             case 'between':
               if (_keys == '') {
                 _keys = key + ' BETWEEN ? AND ?';

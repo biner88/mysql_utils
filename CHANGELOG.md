@@ -1,3 +1,7 @@
+## [1.0.5]
+
+* add `notin`
+
 ## [1.0.4]
 
 * Fix document error.

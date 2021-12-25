@@ -1,3 +1,7 @@
+## [1.0.7]
+
+* delete flutter sdk
+
 ## [1.0.6]
 
 * add multi-table query

@@ -1,7 +1,6 @@
 import 'dart:async';
-import 'package:mysql1/mysql1.dart';
-// import 'package:mysql1/src/single_connection.dart';
-export 'package:mysql1/mysql1.dart';
+
+import 'mysql1/mysql1.dart';
 
 ///mysql helper
 class MysqlUtils {
@@ -248,7 +247,7 @@ class MysqlUtils {
     if (insertData.isEmpty) {
       throw ('insertData isEmpty');
     }
-    if (insertData is List && insertData.isNotEmpty) {
+    if (insertData.isNotEmpty) {
       var _vals = <Object?>[];
       var _keys = '';
       var _wh = '';
@@ -306,7 +305,7 @@ class MysqlUtils {
     if (insertData.isEmpty) {
       throw ('insertData.length!=0');
     }
-    if (insertData is Map && insertData.isNotEmpty) {
+    if (insertData.isNotEmpty) {
       var _vals = [];
       var _keys = '';
       var _wh = '';

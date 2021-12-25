@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:mysql_utils/mysql1/mysql1.dart';
 import 'package:mysql_utils/mysql_utils.dart';
 
 Future main() async {

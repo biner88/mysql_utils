@@ -1,3 +1,9 @@
+## [1.0.6]
+
+* add multi-table query
+* add where support string
+* merge mysql1 
+
 ## [1.0.5]
 
 * add `notin`

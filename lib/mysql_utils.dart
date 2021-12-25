@@ -299,6 +299,7 @@ class MysqlUtils {
   Future<int> insert({
     required String table,
     required Map insertData,
+    replace = false,
     debug = false,
   }) async {
     table = _tableParse(table);
@@ -323,7 +324,8 @@ class MysqlUtils {
       });
       try {
         var result = await query(
-            'INSERT INTO $table ($_keys) VALUES ($_wh)', _vals,
+            '${replace ? 'REPLACE' : 'INSERT'} INTO $table ($_keys) VALUES ($_wh)',
+            _vals,
             debug: debug);
         return result.insertId ?? 0;
       } catch (e) {
@@ -594,15 +596,23 @@ class MysqlUtils {
   String _tableParse(String table) {
     var _table = '';
     if (table.contains(',')) {
-      _table = table;
+      var tbs = [];
+      for (var tb in table.split(',')) {
+        var vl = tb.split(' ');
+        if (_prefix == '') {
+          tbs.add('`' + vl.first + '` ' + vl.last);
+        } else {
+          tbs.add('`' + _prefix + vl.first + '` ' + vl.last);
+        }
+      }
+      _table = tbs.join(',');
     } else {
-      if (table.contains(_prefix)) {
-        _table = '`' + table + '`';
+      if (_prefix == '') {
+        _table = '`' + table.trim() + '`';
       } else {
-        _table = '`' + _prefix + table + '`';
+        _table = '`' + _prefix + table.trim() + '`';
       }
     }
-
     return _table;
   }
 
@@ -649,7 +659,7 @@ class MysqlUtils {
     var _where = '';
     var _values = [];
     if (where is String && where != '') {
-      _where = '_where $where';
+      _where = 'WHERE $where';
     } else if (where is Map && where.isNotEmpty) {
       var _vals = [];
       var _keys = '';

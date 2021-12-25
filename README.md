@@ -53,21 +53,18 @@ var row = await db
 print(row);
 `````
 
-#### getOne
+#### getAll(getOne) Multi table
 
-Query one data
+Query Multi data , multi-table query
 
 ```yaml
-var row = await db.getOne(
-  table: 'table',
-  fields: '*',
-  //group: 'name',
-  //having: 'name',
-  //order: 'id desc',
-  //limit: 10,//10 or '10 ,100'
-  where: {'email': 'xxx@google.com'},
+var res = await db.getAll(
+  table: 'user tb1,upload tb2',
+  fields: 'tb2.fileSize',
+  where: 'tb2.id>0 and tb2.uid=tb1.id',
+  debug: true,
 );
-print(row);
+print(res);
 ```
 
 #### getOne
@@ -82,6 +79,7 @@ var row = await db.getOne(
   //having: 'name',
   //order: 'id desc',
   //limit: 10,//10 or '10 ,100'
+  //where: 'email=xxx@google.com',
   where: {'email': 'xxx@google.com'},
 );
 print(row);

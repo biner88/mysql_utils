@@ -6,16 +6,16 @@ import 'package:mysql_utils/mysql_utils.dart';
 Future main() async {
   final db = MysqlUtils(
       settings: ConnectionSettings(
-        host: '127.0.0.1',
+        host: '10.0.0.88',
         port: 3306,
-        user: 'test',
-        password: 'test',
-        db: 'database',
+        user: 'mysqltest',
+        password: 'mysqltest',
+        db: 'mysqltest',
         useCompression: false,
         useSSL: false,
         timeout: const Duration(seconds: 10),
       ),
-      prefix: '',
+      prefix: 'su_',
       pool: true,
       errorLog: (error) {
         print('|$error\n├───────────────────────────');
@@ -32,15 +32,23 @@ Future main() async {
         // );
         // print(row);
       });
-
+  ////
+  // var res = await db.getAll(
+  //   table: 'user tb1,upload tb2',
+  //   fields: 'tb2.fileSize',
+  //   where: 'tb2.id>0 and tb2.uid=tb1.id',
+  //   debug: true,
+  // );
+  // print(res);
   //////insert
   ///
   // var res = await db.insert(
-  //   table: 'su_user',
+  //   table: 'user',
   //   insertData: {
+  //     'nickname': 'biner',
   //     'telphone': '+113888888888',
-  //     'create_time': 1620577162252,
-  //     'update_time': 1620577162252,
+  //     'createTime': 1620577162252,
+  //     'updateTime': 1620577162252,
   //   },
   // );
   // print(res);
@@ -58,21 +66,21 @@ Future main() async {
   // print(row);
   //////getAll
 
-  var row2 = await db.getAll(
-    table: 'table',
-    fields: '*',
-    where: {
-      // 'email': 'xxx@google.com',
-      // 'id': ['between', '1,4'],
-      //'id': ['notbetween', '1,4'],
-      // 'email2': ['=', 'sss@google.com'],
-      // 'news_title': ['like', '%name%'],
-      'id': ['>', 1],
-      // 'id': ['in', [1,2,3]]
-    },
-    debug: true,
-  );
-  print(row2);
+  // var row2 = await db.getAll(
+  //   table: 'user',
+  //   fields: '*',
+  //   where: {
+  //     // 'email': 'xxx@google.com',
+  //     // 'id': ['between', '1,4'],
+  //     //'id': ['notbetween', '1,4'],
+  //     // 'email2': ['=', 'sss@google.com'],
+  //     // 'news_title': ['like', '%name%'],
+  //     'id': ['>', 1],
+  //     // 'id': ['in', [1,2,3]]
+  //   },
+  //   debug: true,
+  // );
+  // print(row2);
   //////avg
   ///
   // var row = await db.avg(

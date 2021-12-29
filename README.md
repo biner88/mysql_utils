@@ -2,7 +2,7 @@
 
 [![Pub](https://img.shields.io/pub/v/mysql_utils.svg)](https://pub.dev/packages/mysql_utils)
 
-Flutter [mysql1](https://pub.dev/packages/mysql1) plugin util, Use mysql1 easily.
+Flutter mysql1 plugin util, Use mysql1 easily.
 
 [简体中文](README_ZH.md)
 
@@ -10,7 +10,7 @@ Flutter [mysql1](https://pub.dev/packages/mysql1) plugin util, Use mysql1 easily
 
 ```yaml
 dependencies:
-  mysql_utils: ^1.0.2
+  mysql_utils: ^1.0.7
 ```
 
 ### APIs
@@ -112,7 +112,7 @@ var row = await db.getAll(
 print(row);
 ```
 
-#### insert 
+#### insert
 
 Add a data
 

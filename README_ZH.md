@@ -2,7 +2,7 @@
 
 [![Pub](https://img.shields.io/pub/v/mysql_utils.svg)](https://pub.dev/packages/mysql_utils)
 
-Flutter [mysql1](https://pub.dev/packages/mysql1) plugin 帮助扩展类.
+Flutter mysql1 plugin 帮助扩展类.
 
 [English](README.md)
 
@@ -10,7 +10,7 @@ Flutter [mysql1](https://pub.dev/packages/mysql1) plugin 帮助扩展类.
 
 ```yaml
 dependencies:
-  mysql_utils: ^1.0.2
+  mysql_utils: ^1.0.7
 ```
 
 ### APIs
@@ -53,6 +53,20 @@ var row = await db
 print(row);
 `````
 
+#### 多表查询
+
+多表查询
+
+```yaml
+var res = await db.getAll(
+  table: 'user tb1,upload tb2',
+  fields: 'tb2.fileSize',
+  where: 'tb2.id>0 and tb2.uid=tb1.id',
+  debug: true,
+);
+print(res);
+```
+
 #### getOne
 
 查询一条数据
@@ -92,13 +106,13 @@ var row = await db.getAll(
     //'email': ['=', 'sss@cc.com'],
     //'news_title': ['like', '%name%'],
     //'user_id': ['>', 1],
-    
+
   },
 );
 print(row);
 ```
 
-#### insert 
+#### insert
 
 增加一条数据
 

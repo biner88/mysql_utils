@@ -210,7 +210,7 @@ class MysqlUtils {
       if (affectedRows! > 0) {
         res = affectedRows;
       } else {
-        res = 1;
+        res = 0;
       }
     } catch (e) {
       _errorLog(e.toString());

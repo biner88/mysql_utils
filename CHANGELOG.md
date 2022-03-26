@@ -1,3 +1,7 @@
+## [1.0.8]
+
+* No update returned 0.
+
 ## [1.0.7]
 
 * delete flutter sdk
@@ -19,7 +23,7 @@
 ## [1.0.3]
 
 * Fix Bug [#3](https://github.com/biner88/mysql_utils/issues/3)
-* Add Where `in`, `between`,  `notbetween` and demo.
+* Add Where `in`,  `between`,  `notbetween` and demo.
 
 ## [1.0.2]
 

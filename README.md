@@ -2,16 +2,15 @@
 
 [![Pub](https://img.shields.io/pub/v/mysql_utils.svg)](https://pub.dev/packages/mysql_utils)
 
-Flutter mysql1 plugin util, Use mysql1 easily.
+Flutter mysql plugin helps extend classes.
+Since 2.0.0, the mysql_client extension library is used, which is more stable.
+Try to be compatible with the method before version 2.0.0.
 
 [简体中文](README_ZH.md)
 
-### Pub
+### Pub install
 
-```yaml
-dependencies:
-  mysql_utils: ^1.0.7
-```
+[Install](https://pub.dev/packages/mysql_utils/install)
 
 ### APIs
 
@@ -19,23 +18,23 @@ dependencies:
 
 ```yaml
  var db = MysqlUtils(
-  settings: ConnectionSettings(
-    host: '127.0.0.1',
-    port: 3306,
-    user: 'user',
-    password: 'password',
-    db: 'db',
-    useCompression: false,
-    useSSL: false,
-    timeout: const Duration(seconds: 10),
-  ),
+  settings: {
+    'host': '127.0.0.1',
+    'port': 3306,
+    'user': 'root',
+    'password': 'root',
+    'db': 'test',
+    'maxConnections': 10,
+    'secure': false,
+    'collation': 'utf8mb4_general_ci',
+  },
   prefix: 'prefix_',
   pool: true,
   errorLog: (error) {
-    print('|$error\n├───────────────────────────');
+    print(error);
   },
   sqlLog: (sql) {
-    print('|$sql\n├───────────────────────────');
+    print(sql);
   },
   connectInit: (db1) async {
     print('whenComplete');
@@ -50,7 +49,7 @@ Native query
 ```yaml
 var row = await db
     .query('select id from Product where id=? or description like ?', [1, 'ce%']);
-print(row);
+print(row.rows.first.assoc());
 `````
 
 #### getAll(getOne) Multi table
@@ -250,14 +249,6 @@ Connection is open or closed
 ```yaml
 var isAlive = await db.isConnectionAlive();
 if (isAlive) print('mysql is isAlive');
-```
-
-#### createConnection
-
-Create a new connection
-
-```yaml
-var newDb = await db.createConnection();
 ```
 
 #### demo test

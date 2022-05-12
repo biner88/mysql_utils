@@ -1,16 +1,17 @@
 import 'dart:async';
 
-import 'mysql1/mysql1.dart';
+import 'package:mysql_client/mysql_client.dart';
+import 'blob.dart';
 
 ///mysql helper
 class MysqlUtils {
   ///database table prefix
   static late String _prefix;
   static final Map<int, MysqlUtils> _sync = {};
-  late Future<MySqlConnection> conn;
+  late Future<MySQLConnectionPool> conn;
+  late Map _settings = {};
   int queryTimes = 0;
   int transTimes = 0;
-  ConnectionSettings _settings = ConnectionSettings();
 
   ///sql error log
   final Function? errorLog;
@@ -21,7 +22,7 @@ class MysqlUtils {
   ///
   final Function? connectInit;
   factory MysqlUtils({
-    ConnectionSettings? settings,
+    required Map settings,
     linkNum = 0,
     String prefix = '',
     bool pool = false,
@@ -30,7 +31,6 @@ class MysqlUtils {
     Function? connectInit,
   }) {
     _prefix = prefix;
-
     if (_sync[linkNum] != null && pool) {
       return _sync[linkNum]!;
     } else {
@@ -42,7 +42,7 @@ class MysqlUtils {
   }
 
   MysqlUtils._internal([
-    ConnectionSettings? settings,
+    Map? settings,
     int linkNum = 0,
     this.sqlLog,
     this.errorLog,
@@ -50,39 +50,41 @@ class MysqlUtils {
   ]) {
     if (settings != null) {
       _settings = settings;
+    } else {
+      throw ('settings is null');
     }
-    conn = createConnection();
+    conn = createConnection(settings);
   }
 
   ///create connection
-  Future<MySqlConnection> createConnection() async {
-    return Future<MySqlConnection>(() async {
-      try {
-        return await MySqlConnection.connect(_settings).whenComplete(() {
-          if (connectInit != null) {
-            connectInit!(this);
-          }
-        });
-      } catch (e) {
-        _errorLog('MySQL: connect error' + e.toString());
-        close();
-        rethrow;
-      }
-    });
+  Future<MySQLConnectionPool> createConnection(Map settings) async {
+    return MySQLConnectionPool(
+      host: settings['host'] ?? '127.0.0.1',
+      port: settings['port'] ?? 3306,
+      userName: settings['user'] ?? '',
+      password: settings['password'] ?? '',
+      maxConnections: settings['maxConnections'] ?? 10,
+      databaseName: settings['db'] ?? '', // optional,
+      secure: settings['secure'] ?? false,
+      collation: settings['collation'] ?? 'utf8mb4_general_ci',
+    );
   }
 
   ///isConnectionAlive
   Future<bool> isConnectionAlive() async {
     try {
-      await (await conn).query('select 1', []).timeout(
-          Duration(milliseconds: 500), onTimeout: () {
+      await query('select 1', []).timeout(Duration(milliseconds: 500),
+          onTimeout: () {
         throw TimeoutException('test isConnectionAlive timeout.');
       });
       return true;
     } catch (e) {
-      conn = createConnection();
-      return false;
+      conn = createConnection(_settings);
+      // if ((await conn).activeConnectionsQty.) {
+
+      // }
     }
+    return true;
   }
 
   /// ```
@@ -140,17 +142,17 @@ class MysqlUtils {
   ///   where: {'id':1}
   /// );
   /// ```
-  Future<int> delete(
+  Future<BigInt> delete(
       {required String table, required where, debug = false}) async {
-    var res = 0;
+    BigInt res = BigInt.zero;
     table = _tableParse(table);
     var whp = _whereParse(where);
     var _where = whp['where'];
     var _values = whp['values'];
     try {
       var results =
-          await query('delete from $table $_where ', _values, debug: debug);
-      res = results.affectedRows ?? 0;
+          await query('DELETE FROM $table $_where ', _values, debug: debug);
+      res = results.affectedRows;
     } catch (e) {
       _errorLog(e.toString());
       close();
@@ -171,13 +173,13 @@ class MysqlUtils {
   ///   'id':1,
   /// });
   ///```
-  Future<int> update({
+  Future<BigInt> update({
     required String table,
     required Map updateData,
     required where,
     debug = false,
   }) async {
-    var res = 0;
+    var res = BigInt.zero;
     table = _tableParse(table);
 
     var whp = _whereParse(where);
@@ -206,12 +208,7 @@ class MysqlUtils {
       var results = await query(
           'update $table $_setkeys $_where ', _updateValues,
           debug: debug);
-      var affectedRows = results.affectedRows;
-      if (affectedRows! > 0) {
-        res = affectedRows;
-      } else {
-        res = 0;
-      }
+      res = results.affectedRows;
     } catch (e) {
       _errorLog(e.toString());
       close();
@@ -237,12 +234,13 @@ class MysqlUtils {
   ///       }
   /// ]);
   ///```
-  Future<int> insertAll({
+  Future<List<BigInt>> insertAll({
     required String table,
     required List<Map> insertData,
     replace = false,
     debug = false,
   }) async {
+    List<BigInt> lastInsertIDs = [];
     table = _tableParse(table);
     if (insertData.isEmpty) {
       throw ('insertData isEmpty');
@@ -251,7 +249,7 @@ class MysqlUtils {
       var _vals = <Object?>[];
       var _keys = '';
       var _wh = '';
-      insertData[0].forEach((key, value) {
+      insertData.first.forEach((key, value) {
         if (value is String || value is num) {
           if (_keys == '') {
             _keys = '`' + key + '`';
@@ -276,14 +274,13 @@ class MysqlUtils {
             '${replace ? 'REPLACE' : 'INSERT'} INTO $table ($_keys) VALUES ($_wh)',
             _vals.cast(),
             debug: debug);
-
-        return results.length;
+        return results;
       } catch (e) {
         _errorLog(e.toString());
         close();
       }
     }
-    return 0;
+    return lastInsertIDs;
   }
 
   ///```
@@ -296,7 +293,7 @@ class MysqlUtils {
   ///   },
   /// );
   ///```
-  Future<int> insert({
+  Future<BigInt> insert({
     required String table,
     required Map insertData,
     replace = false,
@@ -327,13 +324,13 @@ class MysqlUtils {
             '${replace ? 'REPLACE' : 'INSERT'} INTO $table ($_keys) VALUES ($_wh)',
             _vals,
             debug: debug);
-        return result.insertId ?? 0;
+        return result.lastInsertID;
       } catch (e) {
         _errorLog(e.toString());
         close();
       }
     }
-    return 0;
+    return BigInt.zero;
   }
 
   ///```
@@ -348,7 +345,7 @@ class MysqlUtils {
   ///   }
   /// );
   ///```
-  Future<int> count({
+  Future<BigInt> count({
     required String table,
     fields = '*',
     where = const {},
@@ -370,12 +367,11 @@ class MysqlUtils {
           'SELECT count($fields) as _count FROM $table $_where $group $having',
           _values,
           debug: debug);
-
-      return _resultFormat(results)[0]['_count'];
+      return BigInt.parse(_resultFormat(results).first['_count']);
     } catch (e) {
       _errorLog(e.toString());
       close();
-      return 0;
+      return BigInt.zero;
     }
   }
 
@@ -416,7 +412,7 @@ class MysqlUtils {
           _values,
           debug: debug);
 
-      return _resultFormat(results)[0]['_avg'];
+      return double.parse(_resultFormat(results).first['_avg']);
     } catch (e) {
       _errorLog(e.toString());
       close();
@@ -459,8 +455,7 @@ class MysqlUtils {
           'SELECT max($fields) as _max FROM $table $_where $group $having',
           _values,
           debug: debug);
-
-      return _resultFormat(results)[0]['_max'];
+      return double.parse(_resultFormat(results).first['_max']);
     } catch (e) {
       _errorLog(e.toString());
       close();
@@ -502,8 +497,7 @@ class MysqlUtils {
           'SELECT MIN($fields) as _min FROM $table $_where $group $having',
           _values,
           debug: debug);
-
-      return _resultFormat(results)[0]['_min'];
+      return double.parse(_resultFormat(results).first['_min']);
     } catch (e) {
       _errorLog(e.toString());
       close();
@@ -512,7 +506,7 @@ class MysqlUtils {
   }
 
   ///```
-  /// await db.select(
+  /// await db.getAll(
   ///   table: 'table',
   ///   fields: '*',
   ///   group: 'name',
@@ -557,7 +551,7 @@ class MysqlUtils {
   }
 
   ///```
-  /// await db.find(
+  /// await db.getOne(
   ///   table: 'table',
   ///   fields: '*',
   ///   group: 'name',
@@ -586,8 +580,9 @@ class MysqlUtils {
       limit: 1,
       debug: debug,
     );
+
     if (res.isNotEmpty) {
-      return res[0];
+      return res.first;
     } else {
       return {};
     }
@@ -631,24 +626,16 @@ class MysqlUtils {
     _sync.clear();
   }
 
-  List<dynamic> _resultFormat(Results results) {
+  List<dynamic> _resultFormat(IResultSet results) {
     var _data = [];
-    if (results.isNotEmpty) {
-      var f = [];
-      results.fields.forEach((element) {
-        f.add(element.name);
-      });
+    if (results.rows.isNotEmpty) {
       var d = [];
-      for (var row in results) {
-        var sd = <String, dynamic>{};
-        for (var i = 0; i < f.length; i++) {
-          if (row[i] is Blob) {
-            sd[f[i]] = row[i].toString();
-          } else {
-            sd[f[i]] = row[i];
-          }
+      for (var row in results.rows) {
+        if (row.assoc() is Blob) {
+          d.add(row.assoc().toString());
+        } else {
+          d.add(row.assoc());
         }
-        d.add(sd);
       }
       _data = d;
     }
@@ -726,22 +713,30 @@ class MysqlUtils {
   }
 
   ///query
-  Future<Results> query(String sql, List<Object?>? values,
+  Future<IResultSet> query(String sql, List<dynamic> values,
       {debug = false}) async {
     var queryStr = '$sql  $values';
     queryTimes++;
     if (debug) _sqlLog(queryStr);
-    var res = await (await conn).query(sql, values);
+    var stmt = await (await conn).prepare(sql);
+    var res = await stmt.execute(values);
     return res;
   }
 
   ///queryMulti
-  Future<List<Results>> queryMulti(String sql, Iterable<List<Object?>> values,
+  Future<List<BigInt>> queryMulti(String sql, Iterable<List<Object?>> values,
       {debug = false}) async {
     var queryStr = '$sql  $values';
     queryTimes++;
     if (debug) _sqlLog(queryStr);
-    var res = await (await conn).queryMulti(sql, values);
+    var stmt = await (await conn).prepare(sql);
+    List<BigInt> res = [];
+    values.forEach(
+      (val) async {
+        res.add((await stmt.execute(val)).lastInsertID);
+      },
+    );
+    await stmt.deallocate();
     return res;
   }
 

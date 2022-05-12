@@ -2,16 +2,15 @@
 
 [![Pub](https://img.shields.io/pub/v/mysql_utils.svg)](https://pub.dev/packages/mysql_utils)
 
-Flutter mysql1 plugin 帮助扩展类.
+Flutter mysql plugin 帮助扩展类.
+从2.0.0开始使用mysql_client扩展库，更稳定。
+尽量兼容2.0.0以前版本方法。
 
 [English](README.md)
 
-### Pub
+### 安装方法
 
-```yaml
-dependencies:
-  mysql_utils: ^1.0.7
-```
+[Install](https://pub.dev/packages/mysql_utils/install)
 
 ### APIs
 
@@ -19,23 +18,23 @@ dependencies:
 
 ```yaml
  var db = MysqlUtils(
-  settings: ConnectionSettings(
-    host: '127.0.0.1',
-    port: 3306,
-    user: 'user',
-    password: 'password',
-    db: 'db',
-    useCompression: false,
-    useSSL: false,
-    timeout: const Duration(seconds: 10),
-  ),
+  settings: {
+    'host': '127.0.0.1',
+    'port': 3306,
+    'user': 'root',
+    'password': 'root',
+    'db': 'test',
+    'maxConnections': 10,
+    'secure': false,
+    'collation': 'utf8mb4_general_ci',
+  },
   prefix: 'prefix_',
   pool: true,
   errorLog: (error) {
-    print('|$error\n├───────────────────────────');
+    print(error);
   },
   sqlLog: (sql) {
-    print('|$sql\n├───────────────────────────');
+    print(sql);
   },
   connectInit: (db1) async {
     print('whenComplete');
@@ -50,7 +49,7 @@ dependencies:
 ```yaml
 var row = await db
     .query('select id from Product where id=? or description like ?', [1, 'ce%']);
-print(row);
+print(row.rows.first.assoc());
 `````
 
 #### 多表查询
@@ -251,12 +250,4 @@ if(res1>0){
 ```yaml
 var isAlive = await db.isConnectionAlive();
 if (isAlive) print('mysql is isAlive');
-```
-
-#### createConnection
-
-创建新连接
-
-```yaml
-var newDb = await db.createConnection();
 ```

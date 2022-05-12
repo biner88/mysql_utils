@@ -1,5 +1,3 @@
-library mysql1.blob;
-
 import 'dart:convert';
 
 import 'package:collection/collection.dart';

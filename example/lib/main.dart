@@ -29,12 +29,13 @@ Future main() async {
     },
   );
   //////getOne
-  var row = await db.getOne(
+  var row1 = await db.getOne(
     table: 'user',
     fields: '*',
-    where: {'id': 1},
+    where: {'id': 2},
+    debug: true,
   );
-  print(row); //Map
+  print(row1); //Map
   //////getAll
   // var row2 = await db.getAll(
   //   table: 'user',
@@ -52,7 +53,7 @@ Future main() async {
   // );
   // print(row2); //List<Map>
   //////insert
-  // var res = await db.insert(
+  // var res3 = await db.insert(
   //   table: 'user',
   //   insertData: {
   //     'nickname': 'biner',
@@ -61,17 +62,17 @@ Future main() async {
   //     'updateTime': 1620577162252,
   //   },
   // );
-  // print(res); //lastInsertID
+  // print(res3); //lastInsertID
   ////getAll, Multi table
-  // var res = await db.getAll(
+  // var res4 = await db.getAll(
   //   table: 'user tb1,name tb2',
   //   fields: 'tb2.name',
   //   where: 'tb2.id>0 and tb2.id=tb1.id',
   //   debug: true,
   // );
-  // print(res); //[{name: hh}, {name: joy}]
+  // print(res4); //[{name: hh}, {name: joy}]
   //////count'
-  // var row = await db.count(
+  // var row5 = await db.count(
   //   table: 'user',
   //   fields: 'nickname',
   //   where: {
@@ -79,7 +80,7 @@ Future main() async {
   //   },
   //   debug: true,
   // );
-  // print(row);
+  // print(row5);
 
   //////avg
   // var row = await db.avg(
@@ -134,30 +135,42 @@ Future main() async {
   // );
   // print(row); //update affectedRows
   //////insertAll
-  var row11 = await db.insertAll(table: 'user', insertData: [
-    {
-      'nickname': 'test-${rng.nextInt(100)}',
-      'telphone': '+113888888888',
-      'createTime': 1620577162252,
-      'updateTime': 1620577162252,
-    },
-    {
-      'nickname': 'test-${rng.nextInt(100)}',
-      'telphone': '+113888888888',
-      'createTime': 1620577162252,
-      'updateTime': 1620577162252,
-    }
-  ]);
-  print(row11);
+  // var row11 = await db.insertAll(table: 'user', insertData: [
+  //   {
+  //     'nickname': 'test-${rng.nextInt(100)}',
+  //     'telphone': '+113888888888',
+  //     'createTime': 1620577162252,
+  //     'updateTime': 1620577162252,
+  //   },
+  //   {
+  //     'nickname': 'test-${rng.nextInt(100)}',
+  //     'telphone': '+113888888888',
+  //     'createTime': 1620577162252,
+  //     'updateTime': 1620577162252,
+  //   }
+  // ]);
+  // print(row11);
   ////// base sql
   ///
-  // var row = await db.query('SELECT * FROM su_user', []);
-  // print(row.rows.first.assoc());
+  // var row12 = await db.query('SELECT * FROM su_user', []);
+  // for (var item in row12.rows) {
+  //   print(item.assoc());
+  // }
 
   // var isAlive = await db.isConnectionAlive();
   // if (isAlive) {
   //   print('mysql is isAlive');
   // }
-  // var row = await db.query('select * from su_user where id=? ', [1]);
-  // print(row.rows.first.assoc());
+  // var row13 =
+  //     await db.query('SELECT * FROM su_user WHERE id=2', [], debug: true);
+  // print(row13.rows.first.assoc());
+  // for (var item in row13.rows) {
+  //   print(item.assoc());
+  // }
+  // for (final row in row13.rows) {
+  //   print(row.colAt(0));
+  //   print(row.colByName("nickname"));
+  //   print(row.assoc());
+  // }
+  // db.close();
 }

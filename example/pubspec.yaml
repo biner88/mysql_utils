@@ -12,7 +12,6 @@ dependencies:
     sdk: flutter
   mysql_utils:
     path: ../
-  mysql_client: ^0.0.16
 
 dev_dependencies:
   flutter_test:

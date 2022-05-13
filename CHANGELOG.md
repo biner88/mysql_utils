@@ -1,3 +1,7 @@
+## [2.0.1]
+
+* Change Bigint to int.
+
 ## [2.0.0]
 
 * Change the library to mysql_client.
@@ -27,7 +31,7 @@
 ## [1.0.3]
 
 * Fix Bug [#3](https://github.com/biner88/mysql_utils/issues/3)
-* Add Where `in`,       `between`,  `notbetween` and demo.
+* Add Where `in`,        `between`,  `notbetween` and demo.
 
 ## [1.0.2]
 

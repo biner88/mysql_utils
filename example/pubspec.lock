@@ -74,13 +74,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  logging:
-    dependency: transitive
-    description:
-      name: logging
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.0.2"
   matcher:
     dependency: transitive
     description:
@@ -103,7 +96,7 @@ packages:
     source: hosted
     version: "1.7.0"
   mysql_client:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: mysql_client
       url: "https://pub.dartlang.org"
@@ -115,7 +108,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "1.0.8"
+    version: "2.0.0"
   path:
     dependency: transitive
     description:
@@ -123,13 +116,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.8.0"
-  pool:
-    dependency: transitive
-    description:
-      name: pool
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.5.0"
   quiver:
     dependency: transitive
     description:

@@ -1,13 +1,8 @@
 import 'dart:async';
-
 import 'package:mysql_client/mysql_client.dart';
 
 ///mysql helper
 class MysqlUtils {
-  ///database table prefix
-  static late String _prefix;
-  static late bool _pool = false;
-
   late Future<MySQLConnectionPool> poolConn;
   late Future<MySQLConnection> singleConn;
   late Map _settings = {};
@@ -25,22 +20,15 @@ class MysqlUtils {
   final Function? connectInit;
   factory MysqlUtils({
     required Map settings,
-    linkNum = 0,
-    String prefix = '',
-    bool pool = false,
     Function? errorLog,
     Function? sqlLog,
     Function? connectInit,
   }) {
-    _prefix = prefix;
-    _pool = pool;
-    return MysqlUtils._internal(
-        settings, linkNum, sqlLog, errorLog, connectInit);
+    return MysqlUtils._internal(settings, sqlLog, errorLog, connectInit);
   }
 
   MysqlUtils._internal([
     Map? settings,
-    int linkNum = 0,
     this.sqlLog,
     this.errorLog,
     this.connectInit,
@@ -50,7 +38,7 @@ class MysqlUtils {
     } else {
       throw ('settings is null');
     }
-    if (_pool) {
+    if (_settings['pool']) {
       poolConn = createConnectionPool(settings);
     } else {
       singleConn = createConnectionSingle(settings);
@@ -604,6 +592,7 @@ class MysqlUtils {
 
   String _tableParse(String table) {
     var _table = '';
+    String _prefix = _settings['prefix'];
     if (table.contains(',')) {
       var tbs = [];
       for (var tb in table.split(',')) {
@@ -728,7 +717,7 @@ class MysqlUtils {
 
   ///close
   Future<void> close() async {
-    if (!_pool) {
+    if (!_settings['pool']) {
       (await singleConn).close();
     } else {
       (await poolConn).close();
@@ -746,14 +735,14 @@ class MysqlUtils {
       transaction = true;
     }
     if (transaction) {
-      if (_pool) {
+      if (_settings['pool']) {
         return await (await poolConn).execute(sql, {});
       } else {
         return await (await singleConn).execute(sql, {});
       }
     } else {
       PreparedStmt stmt;
-      if (_pool) {
+      if (_settings['pool']) {
         stmt = await (await poolConn).prepare(sql);
       } else {
         stmt = await (await singleConn).prepare(sql);
@@ -771,7 +760,7 @@ class MysqlUtils {
     queryTimes++;
     if (debug) _sqlLog(queryStr);
     PreparedStmt stmt;
-    if (_pool) {
+    if (_settings['pool']) {
       stmt = await (await poolConn).prepare(sql);
     } else {
       stmt = await (await singleConn).prepare(sql);

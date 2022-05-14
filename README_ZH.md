@@ -26,10 +26,10 @@ Flutter mysql plugin 帮助扩展类.
     'db': 'test',
     'maxConnections': 10,
     'secure': false,
+    'prefix': 'prefix_',
+    'pool': true,
     'collation': 'utf8mb4_general_ci',
   },
-  prefix: 'prefix_',
-  pool: true,
   errorLog: (error) {
     print(error);
   },

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:math';
 
 import 'package:mysql_utils/mysql_utils.dart';
@@ -15,10 +14,10 @@ Future main() async {
       'db': 'test',
       'maxConnections': 10,
       'secure': false,
+      'prefix': 'su_',
+      'pool': false,
       'collation': 'utf8mb4_general_ci',
     },
-    prefix: 'su_',
-    pool: false,
     errorLog: (error) {
       print(error);
     },
@@ -30,14 +29,13 @@ Future main() async {
     },
   );
   //////getOne
-  var row1 = await db.getOne(
-    table: 'user',
-    fields: '*',
-    where: {'id': 2},
-    // debug: true,
-  );
-  print(jsonEncode(row1));
-  await db.close();
+  // var row1 = await db.getOne(
+  //   table: 'user',
+  //   fields: '*',
+  //   where: {'id': 2},
+  //   // debug: true,
+  // );
+  // await db.close();
   // print(row1); //Map
   //////getAll
   // var row2 = await db.getAll(
@@ -126,17 +124,17 @@ Future main() async {
   // print(row); //delete rows count
 
   //////update
-  // var row = await db.update(
-  //   table: 'user',
-  //   updateData: {
-  //     'nickname': 'test-${rng.nextInt(100)}',
-  //   },
-  //   where: {
-  //     'id': 2,
-  //   },
-  //   debug: true,
-  // );
-  // print(row); //update affectedRows
+  var row = await db.update(
+    table: 'user',
+    updateData: {
+      'nickname': 'test-${rng.nextInt(100)}',
+    },
+    where: {
+      'id': 2,
+    },
+    debug: true,
+  );
+  print(row); //update affectedRows
   //////insertAll
   // var row11 = await db.insertAll(table: 'user', insertData: [
   //   {

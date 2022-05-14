@@ -29,14 +29,14 @@ Future main() async {
     },
   );
   //////getOne
-  // var row1 = await db.getOne(
-  //   table: 'user',
-  //   fields: '*',
-  //   where: {'id': 2},
-  //   // debug: true,
-  // );
-  // await db.close();
-  // print(row1); //Map
+  var row1 = await db.getOne(
+    table: 'user',
+    fields: '*',
+    where: {'id': 2},
+    // debug: true,
+  );
+  await db.close();
+  print(row1); //Map
   //////getAll
   // var row2 = await db.getAll(
   //   table: 'user',
@@ -57,7 +57,7 @@ Future main() async {
   // var res3 = await db.insert(
   //   table: 'user',
   //   insertData: {
-  //     'nickname': 'biner',
+  //     'nickname': 'biner123',
   //     'telphone': '+113888888888',
   //     'createTime': 1620577162252,
   //     'updateTime': 1620577162252,
@@ -124,17 +124,17 @@ Future main() async {
   // print(row); //delete rows count
 
   //////update
-  var row = await db.update(
-    table: 'user',
-    updateData: {
-      'nickname': 'test-${rng.nextInt(100)}',
-    },
-    where: {
-      'id': 2,
-    },
-    debug: true,
-  );
-  print(row); //update affectedRows
+  // var row = await db.update(
+  //   table: 'user',
+  //   updateData: {
+  //     'nickname': 'test-${rng.nextInt(100)}',
+  //   },
+  //   where: {
+  //     'id': 2,
+  //   },
+  //   debug: true,
+  // );
+  // print(row); //update affectedRows
   //////insertAll
   // var row11 = await db.insertAll(table: 'user', insertData: [
   //   {

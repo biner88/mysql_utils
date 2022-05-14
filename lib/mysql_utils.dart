@@ -244,45 +244,13 @@ class MysqlUtils {
     debug = false,
   }) async {
     List<int> lastInsertIDs = [];
-    table = _tableParse(table);
-    if (insertData.isEmpty) {
-      throw ('insertData isEmpty');
-    }
-    if (insertData.isNotEmpty) {
-      var _vals = <Object?>[];
-      var _keys = '';
-      var _wh = '';
-      insertData.first.forEach((key, value) {
-        if (value is String || value is num) {
-          if (_keys == '') {
-            _keys = '`' + key + '`';
-            _wh = '?';
-          } else {
-            _keys += ', `' + key + '`';
-            _wh += ', ?';
-          }
-        }
-      });
-
-      insertData.forEach((ele) {
-        var sd = <Object?>[];
-        ele.forEach((key1, value1) {
-          sd.add(value1);
-        });
-        _vals.add(sd);
-      });
-
-      try {
-        var results = await queryMulti(
-            '${replace ? 'REPLACE' : 'INSERT'} INTO $table ($_keys) VALUES ($_wh)',
-            _vals.cast(),
-            debug: debug);
-        return results;
-      } catch (e) {
-        _errorLog(e.toString());
-        close();
+    insertData.forEach((data) async {
+      int lasteId = await insert(
+          table: table, insertData: data, replace: replace, debug: debug);
+      if (lasteId > 0) {
+        lastInsertIDs.add(lasteId);
       }
-    }
+    });
     return lastInsertIDs;
   }
 

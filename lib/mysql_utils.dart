@@ -639,7 +639,7 @@ class MysqlUtils {
     return '';
   }
 
-  void close() async {
+  Future<void> close() async {
     if (!_pool) {
       (await singleConn).close();
     } else {
@@ -652,11 +652,11 @@ class MysqlUtils {
     if (results.rows.isNotEmpty) {
       var d = [];
       for (var row in results.rows) {
-        if (row.assoc() is Blob) {
-          d.add(row.assoc().toString());
-        } else {
-          d.add(row.assoc());
-        }
+        // if (row.assoc() is Blob) {
+        //   d.add(row.assoc().toString());
+        // } else {
+        d.add(row.assoc());
+        // }
       }
       _data = d;
     }
@@ -739,15 +739,27 @@ class MysqlUtils {
     var queryStr = '$sql  $values';
     queryTimes++;
     if (debug) _sqlLog(queryStr);
-    var stmt;
-    if (_pool) {
-      stmt = await (await poolConn).prepare(sql);
-    } else {
-      stmt = await (await singleConn).prepare(sql);
+    bool transaction = false;
+    if (sql == 'start transaction' || sql == 'commit' || sql == 'rollback') {
+      transaction = true;
     }
-    var res = await stmt.execute(values);
-    await stmt.deallocate();
-    return res;
+    if (transaction) {
+      if (_pool) {
+        return await (await poolConn).execute(sql, {});
+      } else {
+        return await (await singleConn).execute(sql, {});
+      }
+    } else {
+      PreparedStmt stmt;
+      if (_pool) {
+        stmt = await (await poolConn).prepare(sql);
+      } else {
+        stmt = await (await singleConn).prepare(sql);
+      }
+      var res = await stmt.execute(values);
+      await stmt.deallocate();
+      return res;
+    }
   }
 
   ///queryMulti
@@ -756,13 +768,12 @@ class MysqlUtils {
     var queryStr = '$sql  $values';
     queryTimes++;
     if (debug) _sqlLog(queryStr);
-    var stmt;
+    PreparedStmt stmt;
     if (_pool) {
       stmt = await (await poolConn).prepare(sql);
     } else {
       stmt = await (await singleConn).prepare(sql);
     }
-
     List<int> res = [];
     values.forEach(
       (val) async {

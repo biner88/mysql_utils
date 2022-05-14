@@ -17,7 +17,7 @@ Future main() async {
       'collation': 'utf8mb4_general_ci',
     },
     prefix: 'su_',
-    pool: true,
+    pool: false,
     errorLog: (error) {
       print(error);
     },
@@ -35,6 +35,7 @@ Future main() async {
     where: {'id': 2},
     debug: true,
   );
+  await db.close();
   print(row1); //Map
   //////getAll
   // var row2 = await db.getAll(
@@ -173,4 +174,9 @@ Future main() async {
   //   print(row.assoc());
   // }
   // db.close();
+  ///Transactions
+  // await db.startTrans();
+  // await db.delete(table: 'user', where: {'id': 13}, debug: true);
+  // await db.rollback();
+  // await db.close();
 }

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:mysql_client/mysql_client.dart';
-import 'blob.dart';
 
 ///mysql helper
 class MysqlUtils {
@@ -106,7 +105,6 @@ class MysqlUtils {
 
   /// ```
   ///await db.startTrans();
-  ///await db.rollback();
   /// ```
   Future<void> startTrans() async {
     if (transTimes == 0) {
@@ -115,7 +113,7 @@ class MysqlUtils {
         transTimes++;
       } catch (e) {
         _errorLog('MySQL: Transaction is not supported,' + e.toString());
-        close();
+        transTimes = 0;
         rethrow;
       }
     }
@@ -131,7 +129,7 @@ class MysqlUtils {
         transTimes = 0;
       } catch (e) {
         _errorLog('MySQL: Please startTrans(),' + e.toString());
-        close();
+        transTimes = 0;
         rethrow;
       }
     }
@@ -147,7 +145,7 @@ class MysqlUtils {
         transTimes = 0;
       } catch (e) {
         _errorLog('MySQL: Please startTrans(),' + e.toString());
-        close();
+        transTimes = 0;
         rethrow;
       }
     }
@@ -228,7 +226,7 @@ class MysqlUtils {
       res = results.affectedRows.toInt();
     } catch (e) {
       _errorLog(e.toString());
-      close();
+      errorRollback();
     }
     return res;
   }
@@ -344,7 +342,7 @@ class MysqlUtils {
         return result.lastInsertID.toInt();
       } catch (e) {
         _errorLog(e.toString());
-        close();
+        errorRollback();
       }
     }
     return 0;
@@ -387,7 +385,7 @@ class MysqlUtils {
       return int.parse(_resultFormat(results).first['_count']);
     } catch (e) {
       _errorLog(e.toString());
-      close();
+      errorRollback();
       return 0;
     }
   }
@@ -415,7 +413,6 @@ class MysqlUtils {
     try {
       if (group != '') group = 'GROUP BY $group';
       if (having != '') having = 'HAVING $having';
-
       if (fields == '') throw 'fields cant be empty';
 
       var whp = _whereParse(where);
@@ -432,7 +429,7 @@ class MysqlUtils {
       return double.parse(_resultFormat(results).first['_avg']);
     } catch (e) {
       _errorLog(e.toString());
-      close();
+      errorRollback();
       return 0;
     }
   }
@@ -475,7 +472,7 @@ class MysqlUtils {
       return double.parse(_resultFormat(results).first['_max']);
     } catch (e) {
       _errorLog(e.toString());
-      close();
+      errorRollback();
       return 0;
     }
   }
@@ -517,7 +514,7 @@ class MysqlUtils {
       return double.parse(_resultFormat(results).first['_min']);
     } catch (e) {
       _errorLog(e.toString());
-      close();
+      errorRollback();
       return 0;
     }
   }
@@ -562,7 +559,7 @@ class MysqlUtils {
       return res;
     } catch (e) {
       _errorLog(e.toString());
-      close();
+      errorRollback();
       return [];
     }
   }
@@ -637,14 +634,6 @@ class MysqlUtils {
       return 'LIMIT $limit';
     }
     return '';
-  }
-
-  Future<void> close() async {
-    if (!_pool) {
-      (await singleConn).close();
-    } else {
-      (await poolConn).close();
-    }
   }
 
   List<dynamic> _resultFormat(IResultSet results) {
@@ -728,6 +717,22 @@ class MysqlUtils {
       'where': _where,
       'values': _values,
     };
+  }
+
+  ///errorRack
+  Future<void> errorRollback() async {
+    if (transTimes > 0) {
+      rollback();
+    }
+  }
+
+  ///close
+  Future<void> close() async {
+    if (!_pool) {
+      (await singleConn).close();
+    } else {
+      (await poolConn).close();
+    }
   }
 
   ///query

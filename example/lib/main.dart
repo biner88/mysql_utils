@@ -179,6 +179,6 @@ Future main() async {
   ///Transactions
   // await db.startTrans();
   // await db.delete(table: 'user', where: {'id': 13}, debug: true);
-  // await db.rollback();
+  // await db.commit();
   // await db.close();
 }

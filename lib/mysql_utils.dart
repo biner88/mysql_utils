@@ -650,13 +650,10 @@ class MysqlUtils {
   List<dynamic> _resultFormat(IResultSet results) {
     var _data = [];
     if (results.rows.isNotEmpty) {
+      // results.rows.map((e) => _data.add(e.typedAssoc()));
       var d = [];
-      for (var row in results.rows) {
-        // if (row.assoc() is Blob) {
-        //   d.add(row.assoc().toString());
-        // } else {
-        d.add(row.assoc());
-        // }
+      for (ResultSetRow row in results.rows) {
+        d.add(row.typedAssoc());
       }
       _data = d;
     }

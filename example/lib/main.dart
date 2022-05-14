@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:mysql_utils/mysql_utils.dart';
@@ -33,10 +34,11 @@ Future main() async {
     table: 'user',
     fields: '*',
     where: {'id': 2},
-    debug: true,
+    // debug: true,
   );
+  print(jsonEncode(row1));
   await db.close();
-  print(row1); //Map
+  // print(row1); //Map
   //////getAll
   // var row2 = await db.getAll(
   //   table: 'user',

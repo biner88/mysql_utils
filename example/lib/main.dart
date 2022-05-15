@@ -39,7 +39,7 @@ Future main() async {
       'createTime': ['>', 1],
       // 'nickname': ['like', '%biner%'],
     },
-    // debug: true,
+    debug: true,
   );
   await db.close();
   print(row1); //Map
@@ -201,6 +201,7 @@ Future main() async {
   // db.close();
 
   ///Transactions
+  // await db.startTrans();
   // await db.startTrans();
   // await db.delete(table: 'user', where: {'id': 14}, debug: true);
   // await db.rollback();

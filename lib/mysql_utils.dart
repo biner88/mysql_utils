@@ -94,14 +94,9 @@ class MysqlUtils {
   /// ```
   Future<void> startTrans() async {
     if (transTimes == 0) {
-      try {
-        await query('start transaction');
-        transTimes++;
-      } catch (e) {
-        _errorLog('MySQL: Transaction is not supported,' + e.toString());
-        transTimes = 0;
-        rethrow;
-      }
+      await query('start transaction');
+    } else {
+      throw ('Only supports startTrans once');
     }
   }
 
@@ -110,14 +105,8 @@ class MysqlUtils {
   /// ```
   Future<void> commit() async {
     if (transTimes > 0) {
-      try {
-        await query('commit');
-        transTimes = 0;
-      } catch (e) {
-        _errorLog('MySQL: Please startTrans(),' + e.toString());
-        transTimes = 0;
-        rethrow;
-      }
+      await query('commit');
+      transTimes = 0;
     }
   }
 
@@ -126,14 +115,8 @@ class MysqlUtils {
   /// ```
   Future<void> rollback() async {
     if (transTimes > 0) {
-      try {
-        await query('rollback');
-        transTimes = 0;
-      } catch (e) {
-        _errorLog('MySQL: Please startTrans(),' + e.toString());
-        transTimes = 0;
-        rethrow;
-      }
+      await query('rollback');
+      transTimes = 0;
     }
   }
 

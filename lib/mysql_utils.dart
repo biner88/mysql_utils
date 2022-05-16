@@ -183,6 +183,7 @@ class MysqlUtils {
       values: updateData,
       debug: debug,
     );
+    print(results.toMap());
     return results.affectedRows;
   }
 
@@ -643,6 +644,7 @@ class MysqlUtils {
           res = await (await singleConn).execute(sql, values);
         }
       }
+
       ResultFormat _res = ResultFormat.from(res);
       return _res;
     } catch (e) {
@@ -728,6 +730,7 @@ class ResultFormat {
     cols = _cols;
     rows = _rows;
     rowsAssoc = _rowsAssoc;
+    affectedRows = results.affectedRows.toInt();
     numOfRows = results.numOfRows;
     numOfColumns = results.numOfColumns;
     rowsStream = results.rowsStream;

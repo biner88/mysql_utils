@@ -183,7 +183,6 @@ class MysqlUtils {
       values: updateData,
       debug: debug,
     );
-    print(results.toMap());
     return results.affectedRows;
   }
 

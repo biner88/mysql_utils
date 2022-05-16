@@ -721,7 +721,6 @@ class ResultFormat {
         _rows.add(e.typedAssoc());
         _rowsAssoc.add(e);
       });
-      results.rows.forEach((e) => _rows.add(e.typedAssoc()));
     }
     if (results.cols.isNotEmpty) {
       results.cols.forEach((e) => _cols.add({'name': e.name, 'type': e.type}));

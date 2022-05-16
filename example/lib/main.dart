@@ -1,10 +1,10 @@
 import 'dart:async';
-// import 'dart:math';
+import 'dart:math';
 
 import 'package:mysql_utils/mysql_utils.dart';
 
 Future main() async {
-  // var rng = new Random();
+  var rng = new Random();
   final db = MysqlUtils(
     settings: {
       'host': '127.0.0.1',
@@ -28,21 +28,33 @@ Future main() async {
       print('whenComplete');
     },
   );
-  //////getOne
-  var row1 = await db.getOne(
+  ////insert
+  var res3 = await db.insert(
     table: 'user',
-    fields: '*',
-    where: {
-      // 'id': 2,
-      // 'id2': ['notbetween', 1, 4],
-      // 'id': ['between', 1, 4],
-      'createTime': ['>', 1],
-      // 'nickname': ['like', '%biner%'],
+    insertData: {
+      'nickname': '中文测试-${rng.nextInt(100)}',
+      'telphone': '+113888888888',
+      'createTime': 1620577162252,
+      'updateTime': 1620577162252,
     },
-    debug: true,
   );
   await db.close();
-  print(row1); //Map
+  print(res3); //lastInsertID
+  //////getOne
+  // var row1 = await db.getOne(
+  //   table: 'user',
+  //   fields: '*',
+  //   where: {
+  //     // 'id': 2,
+  //     // 'id2': ['notbetween', 1, 4],
+  //     // 'id': ['between', 1, 4],
+  //     'createTime': ['>', 1],
+  //     // 'nickname': ['like', '%biner%'],
+  //   },
+  //   debug: true,
+  // );
+  // await db.close();
+  // print(row1); //Map
   //////getAll
   // var row2 = await db.getAll(
   //   table: 'user',
@@ -60,18 +72,6 @@ Future main() async {
   // );
   // await db.close();
   // print(row2); //List<Map>
-  ////insert
-  // var res3 = await db.insert(
-  //   table: 'user',
-  //   insertData: {
-  //     'nickname': '中文测试',
-  //     'telphone': '+113888888888',
-  //     'createTime': 1620577162252,
-  //     'updateTime': 1620577162252,
-  //   },
-  // );
-  // await db.close();
-  // print(res3); //lastInsertID
   //getAll, Multi table
   // var res4 = await db.getAll(
   //   table: 'user tb1,name tb2',
@@ -129,7 +129,8 @@ Future main() async {
   // var row9 = await db.delete(
   //   table: 'user',
   //   where: {
-  //     'id': ['=', 1]
+  //     // 'id': ['=', 2],
+  //     'id': 3
   //   },
   //   debug: true,
   // );
@@ -142,7 +143,7 @@ Future main() async {
   //     'nickname': '想vvb-${rng.nextInt(100)}',
   //   },
   //   where: {
-  //     'id': 2,
+  //     'id': 4,
   //   },
   //   debug: true,
   // );
@@ -169,10 +170,10 @@ Future main() async {
   ///
   // var row12 = await db.query('SELECT * FROM su_user');
   // for (var item in row12.rows) {
-  //   print(item.assoc());
+  //   print(item);
   // }
   // await db.close();
-  ///Alive check
+  // //Alive check
   // var isAlive = await db.isConnectionAlive();
   // if (isAlive) {
   //   print('mysql is isAlive');
@@ -182,18 +183,21 @@ Future main() async {
   // if (!isAlive) {
   //   print('mysql is isDead');
   // }
-  ///
+
+  ///base
   //// var row13 = await db.query('SELECT * FROM su_user WHERE id=2', debug: true);
   // var row13 = await db.query('SELECT * FROM su_user WHERE id=:id',
   //     values: {
-  //       'id': 2,
+  //       'id': 1,
   //     },
   //     debug: true);
-  // print(row13.rows.first.assoc());
-  // for (var item in row13.rows) {
+
+  // print(row13.toMap());
+  //// print(row13.rowsAssoc.first.assoc());
+  // for (var item in row13.rowsAssoc) {
   //   print(item.assoc());
   // }
-  // for (final row in row13.rows) {
+  // for (final row in row13.rowsAssoc) {
   //   print(row.colAt(0));
   //   print(row.colByName("nickname"));
   //   print(row.assoc());
@@ -202,8 +206,8 @@ Future main() async {
 
   ///Transactions
   // await db.startTrans();
-  // await db.startTrans();
-  // await db.delete(table: 'user', where: {'id': 14}, debug: true);
-  // await db.rollback();
+  // await db.delete(table: 'user', where: {'id': 25}, debug: true);
+  // await db.delete(table: 'user1', where: {'id': 26}, debug: true);
+  // await db.commit();
   // await db.close();
 }

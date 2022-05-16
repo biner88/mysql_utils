@@ -1,15 +1,21 @@
 import 'dart:async';
-import 'dart:typed_data';
 import 'package:mysql_client/mysql_client.dart';
-import 'package:mysql_client/mysql_protocol.dart';
 
 ///mysql helper
 class MysqlUtils {
+  ///pool connect
   late Future<MySQLConnectionPool> poolConn;
+
+  ///single connect
   late Future<MySQLConnection> singleConn;
+
+  ///mysql setting
   late Map _settings = {};
 
+  ///query Times
   int queryTimes = 0;
+
+  ///transaction start
   int transTimes = 0;
 
   ///sql error log
@@ -94,6 +100,7 @@ class MysqlUtils {
   /// ```
   Future<void> startTrans() async {
     if (transTimes == 0) {
+      transTimes++;
       await query('start transaction');
     } else {
       throw ('Only supports startTrans once');
@@ -133,8 +140,9 @@ class MysqlUtils {
   }) async {
     table = _tableParse(table);
     String _where = _whereParse(where);
-    var results = await query('DELETE FROM $table $_where ', debug: debug);
-    return results.affectedRows.toInt();
+    ResultFormat results =
+        await query('DELETE FROM $table $_where ', debug: debug);
+    return results.affectedRows;
   }
 
   ///```
@@ -170,12 +178,12 @@ class MysqlUtils {
 
     String _setValue = _setkeys.join(',');
     String _sql = 'update $table SET $_setValue $_where';
-    IResultSet results = await query(
+    ResultFormat results = await query(
       _sql,
       values: updateData,
       debug: debug,
     );
-    return results.affectedRows.toInt();
+    return results.affectedRows;
   }
 
   ///```
@@ -202,8 +210,6 @@ class MysqlUtils {
     replace = false,
     debug = true,
   }) async {
-    // List<int> lastInsertIDs = [];
-
     if (insertData.isEmpty) {
       throw ('insertData.length!=0');
     }
@@ -226,8 +232,8 @@ class MysqlUtils {
     String _valuesString = _values.join(',');
     String _sql =
         '${replace ? 'REPLACE' : 'INSERT'} INTO $table ($_fieldsString) VALUES $_valuesString';
-    IResultSet result = await query(_sql, debug: debug);
-    return result.affectedRows.toInt();
+    ResultFormat result = await query(_sql, debug: debug);
+    return result.affectedRows;
   }
 
   ///```
@@ -260,8 +266,8 @@ class MysqlUtils {
     String _valuesString = _values.join(',');
     String _sql =
         '${replace ? 'REPLACE' : 'INSERT'} INTO $table ($_fieldsString) VALUES ($_valuesString)';
-    IResultSet result = await query(_sql, values: insertData, debug: debug);
-    return result.lastInsertID.toInt();
+    ResultFormat result = await query(_sql, values: insertData, debug: debug);
+    return result.lastInsertID;
   }
 
   ///```
@@ -290,10 +296,10 @@ class MysqlUtils {
     String _where = _whereParse(where);
     table = _tableParse(table);
 
-    IResultSet results = await query(
+    ResultFormat results = await query(
         'SELECT count($fields) as _count FROM $table $_where $group $having',
         debug: debug);
-    return int.parse(results.rows.first.colByName('_count') ?? '0');
+    return results.rows.first['_count'];
   }
 
   ///```
@@ -323,10 +329,10 @@ class MysqlUtils {
     String _where = _whereParse(where);
     table = _tableParse(table);
 
-    IResultSet results = await query(
+    ResultFormat results = await query(
         'SELECT AVG($fields) as _avg FROM $table $_where $group $having',
         debug: debug);
-    return double.parse(results.rows.first.colByName('_avg') ?? '0');
+    return double.parse(results.rows.first['_avg'] ?? '0');
   }
 
   ///```
@@ -356,10 +362,15 @@ class MysqlUtils {
     String _where = _whereParse(where);
     table = _tableParse(table);
 
-    IResultSet results = await query(
+    ResultFormat results = await query(
         'SELECT max($fields) as _max FROM $table $_where $group $having',
         debug: debug);
-    return double.parse(results.rows.first.colByName('_max') ?? '0');
+    var n = results.rows.first['_max'];
+    if (n is int) {
+      return n.toDouble();
+    } else {
+      return n;
+    }
   }
 
   ///```
@@ -388,10 +399,15 @@ class MysqlUtils {
     String _where = _whereParse(where);
     table = _tableParse(table);
 
-    IResultSet results = await query(
+    ResultFormat results = await query(
         'SELECT MIN($fields) as _min FROM $table $_where $group $having',
         debug: debug);
-    return double.parse(results.rows.first.colByName('_min') ?? '0');
+    var n = results.rows.first['_min'];
+    if (n is int) {
+      return n.toDouble();
+    } else {
+      return n;
+    }
   }
 
   ///```
@@ -427,9 +443,10 @@ class MysqlUtils {
     String _sql =
         'SELECT $fields FROM $table $_where $group $having $order $limit';
 
-    IResultSet results = await query(_sql, debug: debug);
+    ResultFormat results = await query(_sql, debug: debug);
+
     if (results.numOfRows > 0) {
-      return _resultFormat(results);
+      return results.rows;
     } else {
       return [];
     }
@@ -473,6 +490,7 @@ class MysqlUtils {
     }
   }
 
+  ///table parse
   String _tableParse(String table) {
     var _table = '';
     String _prefix = _settings['prefix'];
@@ -508,19 +526,7 @@ class MysqlUtils {
     return '';
   }
 
-  List<dynamic> _resultFormat(IResultSet results) {
-    var _data = [];
-    if (results.rows.isNotEmpty) {
-      // results.rows.map((e) => _data.add(e.typedAssoc()));
-      var d = [];
-      for (ResultSetRow row in results.rows) {
-        d.add(row.typedAssoc());
-      }
-      _data = d;
-    }
-    return _data;
-  }
-
+  ///where parsw
   String _whereParse(dynamic where) {
     String _where = '';
     List<String> _fields = [];
@@ -544,8 +550,6 @@ class MysqlUtils {
               _keys += ' AND ($key = $value)';
             }
           }
-
-          // _vals.add(value);
         }
         if (value is List) {
           switch (value[0]) {
@@ -611,7 +615,8 @@ class MysqlUtils {
     }
   }
 
-  Future<IResultSet> query(
+  ///query
+  Future<ResultFormat> query(
     String sql, {
     Map<String, dynamic> values = const {},
     debug = false,
@@ -623,34 +628,31 @@ class MysqlUtils {
     if (sql == 'start transaction' || sql == 'commit' || sql == 'rollback') {
       transaction = true;
     }
-
     try {
+      IResultSet res;
       if (transaction) {
         if (_settings['pool']) {
-          return await (await poolConn).execute(sql, {});
+          res = await (await poolConn).execute(sql, {});
         } else {
-          return await (await singleConn).execute(sql, {});
+          res = await (await singleConn).execute(sql, {});
         }
       } else {
-        IResultSet res;
         if (_settings['pool']) {
           res = await (await poolConn).execute(sql, values);
         } else {
           res = await (await singleConn).execute(sql, values);
         }
-        return res;
       }
+      ResultFormat _res = ResultFormat.from(res);
+      return _res;
     } catch (e) {
       _errorLog(e.toString());
       errorRollback();
-      final okPacket = MySQLPacket.decodeGenericPacket(Uint8List.fromList([]));
-      final EmptyResultSet empty =
-          EmptyResultSet(okPacket: okPacket.payload as MySQLPacketOK);
-      return empty;
+      return ResultFormat.empty();
     }
   }
 
-  ///queryMulti
+  ///query multi
   Future<List<int>> queryMulti(String sql, Iterable<List<Object?>> values,
       {debug = false}) async {
     var queryStr = '$sql  $values';
@@ -672,6 +674,7 @@ class MysqlUtils {
     return res;
   }
 
+  ///error log report
   void _errorLog(String e) {
     if (errorLog != null) {
       errorLog!(e);
@@ -680,9 +683,77 @@ class MysqlUtils {
     }
   }
 
+  ///debug sql report
   void _sqlLog(String sql) {
     if (sqlLog != null) {
       sqlLog!(sql);
     }
+  }
+}
+
+///Result Format
+class ResultFormat {
+  List cols = [];
+  List rows = [];
+  List rowsAssoc = [];
+  int affectedRows = 0;
+  int numOfRows = 0;
+  int numOfColumns = 0;
+  int lastInsertID = 0;
+  Stream<ResultSetRow>? rowsStream;
+  ResultFormat({
+    required this.cols,
+    required this.rows,
+    required this.rowsAssoc,
+    required this.affectedRows,
+    required this.numOfRows,
+    required this.numOfColumns,
+    required this.lastInsertID,
+    required this.rowsStream,
+  });
+  ResultFormat.from(IResultSet results) {
+    List _rows = [];
+    List _cols = [];
+    List _rowsAssoc = [];
+    if (results.rows.isNotEmpty) {
+      results.rows.forEach((e) {
+        _rows.add(e.typedAssoc());
+        _rowsAssoc.add(e);
+      });
+      results.rows.forEach((e) => _rows.add(e.typedAssoc()));
+    }
+    if (results.cols.isNotEmpty) {
+      results.cols.forEach((e) => _cols.add({'name': e.name, 'type': e.type}));
+    }
+    cols = _cols;
+    rows = _rows;
+    rowsAssoc = _rowsAssoc;
+    numOfRows = results.numOfRows;
+    numOfColumns = results.numOfColumns;
+    rowsStream = results.rowsStream;
+    lastInsertID = results.lastInsertID.toInt();
+  }
+  Map<String, dynamic> toMap() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['cols'] = cols;
+    data['rows'] = rows;
+    data['rowsAssoc'] = rowsAssoc;
+    data['affectedRows'] = affectedRows;
+    data['numOfRows'] = numOfRows;
+    data['numOfColumns'] = numOfColumns;
+    data['rowsStream'] = rowsStream;
+    data['lastInsertID'] = lastInsertID;
+    return data;
+  }
+
+  ResultFormat.empty() {
+    cols = [];
+    rows = [];
+    affectedRows = 0;
+    rowsAssoc = [];
+    numOfRows = 0;
+    numOfColumns = 0;
+    rowsStream = null;
+    lastInsertID = 0;
   }
 }

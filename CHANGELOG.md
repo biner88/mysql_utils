@@ -1,3 +1,7 @@
+## [2.0.7]
+
+* Stability improvements
+
 ## [2.0.6]
 
 * Support special character insertion Translate
@@ -51,7 +55,7 @@
 ## [1.0.3]
 
 * Fix Bug [#3](https://github.com/biner88/mysql_utils/issues/3)
-* Add Where `in`,                     `between`,  `notbetween` and demo.
+* Add Where `in`,                       `between`,  `notbetween` and demo.
 
 ## [1.0.2]
 

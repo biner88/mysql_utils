@@ -16,6 +16,8 @@ Try to be compatible with the method before version 2.0.0.
 
 #### Initialization connection
 
+Compared with 1.0, the initialization parameters have changed. Please refer to the following modifications, use the singleton mode, and call close(); after use to close the database connection.
+
 ```yaml
  var db = MysqlUtils(
   settings: {
@@ -44,12 +46,25 @@ Try to be compatible with the method before version 2.0.0.
 
 #### query
 
-Native query
+Native query, note that the usage here is different from version 1.0, 2.0 inherits the method of mysql_client
 
 ```yaml
 var row = await db
-    .query('select id from Product where id=? or description like ?', [1, 'ce%']);
-print(row.rows.first.assoc());
+    .query('select id from Product where id=:id or description like :description',{
+      'id':1,
+      'description':'%ce%'
+    });
+print(row.toMap());
+//// print(row.rowsAssoc.first.assoc());
+// for (var item in row.rowsAssoc) {
+//   print(item.assoc());
+// }
+// for (final row in row.rowsAssoc) {
+//   print(row.colAt(0));
+//   print(row.colByName("nickname"));
+//   print(row.assoc());
+// }
+// db.close();
 `````
 
 #### getAll(getOne) Multi table
@@ -227,19 +242,14 @@ await db.max(
 
 #### Transaction
 
-Transaction support
+Transaction support, In case of exception, transaction will roll back automatically.
 
 ```yaml
 await db.startTrans();
-var res1 = await db.delete(
-  table:'table',
-  where: {'id':1}
-);
-if(res1>0){
-  await db.commit();
-}else{
-  await db.rollback();
-}
+await db.delete(table: 'user', where: {'id': 25}, debug: true);
+//await db.delete(table: 'user1', where: {'id': 26}, debug: true);
+await db.commit();
+await db.close();
 ```
 
 #### isConnectionAlive

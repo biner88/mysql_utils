@@ -418,6 +418,7 @@ class MysqlUtils {
   ///   having: 'name',
   ///   order: 'id desc',
   ///   limit: 10,//10 or '10 ,100'
+  ///   offset: 1,// 2 or '3', '4'
   ///   debug: false,
   ///   where: {'email': 'xxx@google.com','id': ['between', '1,4'],'email': ['=', 'sss@google.com'],'news_title': ['like', '%name%'],'user_id': ['>', 1]},
   /// );
@@ -430,6 +431,7 @@ class MysqlUtils {
     having = '',
     order = '',
     limit = '',
+    offset = '',
     debug = false,
   }) async {
     if (group != '') group = 'GROUP BY $group';
@@ -439,9 +441,10 @@ class MysqlUtils {
     String _where = _whereParse(where);
     table = _tableParse(table);
     limit = _limitParse(limit);
+    offset = _offsetParse(offset);
 
     String _sql =
-        'SELECT $fields FROM $table $_where $group $having $order $limit';
+        'SELECT $fields FROM $table $_where $group $having $order $limit $offset';
 
     ResultFormat results = await query(_sql, debug: debug);
 
@@ -522,6 +525,17 @@ class MysqlUtils {
     }
     if (limit is String && limit != '') {
       return 'LIMIT $limit';
+    }
+    return '';
+  }
+
+  ///..limit(10) or ..limit('10 ,100')
+  String _offsetParse(dynamic offset) {
+    if (offset is int) {
+      return 'OFFSET $offset';
+    }
+    if (offset is String && offset != '') {
+      return 'OFFSET $offset';
     }
     return '';
   }

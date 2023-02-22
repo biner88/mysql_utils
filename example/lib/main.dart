@@ -210,4 +210,17 @@ Future main() async {
   // await db.delete(table: 'user1', where: {'id': 26}, debug: true);
   // await db.commit();
   // await db.close();
+
+  await db.insert(
+    table: 'text',
+    insertData: {
+      'name': 'test',
+      'content': 'String _where = _whereParse(where, extraWhere: extraWhere);',
+    },
+  );
+
+  var result = await db.getAll(table: 'text', where: {'name': 'test'}, extraWhere: "Match(content) Against('String')");
+  print(result);
+  await db.close();
+
 }

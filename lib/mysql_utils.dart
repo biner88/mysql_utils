@@ -431,12 +431,13 @@ class MysqlUtils {
     order = '',
     limit = '',
     debug = false,
+    extraWhere = '',
   }) async {
     if (group != '') group = 'GROUP BY $group';
     if (having != '') having = 'HAVING $having';
     if (order != '') order = 'ORDER BY $order';
 
-    String _where = _whereParse(where);
+    String _where = _whereParse(where, extraWhere: extraWhere);
     table = _tableParse(table);
     limit = _limitParse(limit);
 
@@ -527,7 +528,7 @@ class MysqlUtils {
   }
 
   ///where parsw
-  String _whereParse(dynamic where) {
+  String _whereParse(dynamic where, {String extraWhere = ''}) {
     String _where = '';
     List<String> _fields = [];
     if (where is String && where != '') {
@@ -595,6 +596,9 @@ class MysqlUtils {
         }
       });
       _where = 'WHERE $_keys';
+      if (extraWhere != ''){
+        _where += ' AND $extraWhere';
+      }
     }
     return _where;
   }

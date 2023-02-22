@@ -92,3 +92,12 @@ VALUES (
   );
 COMMIT;
 SET FOREIGN_KEY_CHECKS = 1;
+
+
+DROP TABLE IF EXISTS su_text;
+CREATE TABLE su_text (
+    id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name varchar(50) NOT NULL,
+    content text NOT NULL,
+    FULLTEXT(content)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;

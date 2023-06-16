@@ -1,4 +1,4 @@
-## [2.1.2]
+## [2.1.3]
 
 * Added settings `sqlEscape: true`
 * Updated README.md
@@ -84,7 +84,7 @@
 ## [1.0.3]
 
 * Fix Bug [#3](https://github.com/biner88/mysql_utils/issues/3)
-* Add Where `in`,                                                   `between`,  `notbetween` and demo.
+* Add Where `in`,                                                    `between`,  `notbetween` and demo.
 
 ## [1.0.2]
 

@@ -32,7 +32,7 @@ Flutter mysql plugin 帮助扩展类.
     'prefix': 'prefix_',
     'pool': false,
     'collation': 'utf8mb4_general_ci',
-    'sqlEscape':true,
+    'sqlEscape': true,
   },
   errorLog: (error) {
     print(error);

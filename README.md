@@ -33,7 +33,7 @@ Compared with 1.0, the initialization parameters have changed. Please refer to t
     'prefix': 'prefix_',
     'pool': true,
     'collation': 'utf8mb4_general_ci',
-    'sqlEscape':true,
+    'sqlEscape': true,
   },
   errorLog: (error) {
     print(error);

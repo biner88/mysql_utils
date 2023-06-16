@@ -24,6 +24,9 @@ class MysqlUtils {
   /// show sql log
   final Function? sqlLog;
 
+  /// sqlEscape
+  bool sqlEscape = false;
+
   ///
   final Function? connectInit;
   factory MysqlUtils({
@@ -43,6 +46,7 @@ class MysqlUtils {
   ]) {
     if (settings != null) {
       _settings = settings;
+      sqlEscape = settings['sqlEscape'] ?? false;
     } else {
       throw ('settings is null');
     }
@@ -136,7 +140,7 @@ class MysqlUtils {
   Future<int> delete({
     required String table,
     required where,
-    debug = false,
+    bool debug = false,
   }) async {
     table = _tableParse(table);
     String _where = _whereParse(where);
@@ -162,7 +166,7 @@ class MysqlUtils {
     required String table,
     required Map<String, dynamic> updateData,
     required where,
-    debug = false,
+    bool debug = false,
   }) async {
     table = _tableParse(table);
     String _where = _whereParse(where);
@@ -177,7 +181,7 @@ class MysqlUtils {
     });
 
     String _setValue = _setkeys.join(',');
-    String _sql = 'update $table SET $_setValue $_where';
+    String _sql = 'UPDATE $table SET $_setValue $_where';
     ResultFormat results = await query(
       _sql,
       values: updateData,
@@ -186,6 +190,8 @@ class MysqlUtils {
     return results.affectedRows;
   }
 
+  ///
+  /// return affectedRows
   ///```
   /// await db.insertAll(
   ///   table: 'table',
@@ -204,11 +210,12 @@ class MysqlUtils {
   ///       }
   /// ]);
   ///```
+
   Future<int> insertAll({
     required String table,
     required List<Map<String, dynamic>> insertData,
     replace = false,
-    debug = true,
+    debug = false,
   }) async {
     if (insertData.isEmpty) {
       throw ('insertData.length!=0');
@@ -223,7 +230,11 @@ class MysqlUtils {
         if (value is num) {
           _t.add(value);
         } else {
-          _t.add('\'$value\'');
+          if (value is String) {
+            _t.add('\'${sqlEscapeString(value)}\'');
+          } else {
+            _t.add('\'$value\'');
+          }
         }
       });
       _values.add('(${_t.join(',')})');
@@ -237,6 +248,8 @@ class MysqlUtils {
   }
 
   ///```
+  /// return lastInsertID
+  ///
   /// await db.insert(
   ///   table: 'table',
   ///   insertData: {
@@ -261,6 +274,9 @@ class MysqlUtils {
     insertData.forEach((key, value) {
       _fields.add('`$key`');
       _values.add(':$key');
+      if (sqlEscape && value is String) {
+        insertData[key] = sqlEscapeString(value);
+      }
     });
     String _fieldsString = _fields.join(',');
     String _valuesString = _values.join(',');
@@ -284,11 +300,11 @@ class MysqlUtils {
   ///```
   Future<int> count({
     required String table,
-    fields = '*',
+    String fields = '*',
     where = const {},
-    group = '',
-    having = '',
-    debug = false,
+    String group = '',
+    String having = '',
+    bool debug = false,
   }) async {
     if (group != '') group = 'GROUP BY $group';
     if (having != '') having = 'HAVING $having';
@@ -316,11 +332,11 @@ class MysqlUtils {
   ///```
   Future<double> avg({
     required String table,
-    fields = '',
+    String fields = '',
     where = const {},
-    group = '',
-    having = '',
-    debug = false,
+    String group = '',
+    String having = '',
+    bool debug = false,
   }) async {
     if (group != '') group = 'GROUP BY $group';
     if (having != '') having = 'HAVING $having';
@@ -349,11 +365,11 @@ class MysqlUtils {
   ///```
   Future<double> max({
     required String table,
-    fields = '',
+    String fields = '',
     where = const {},
-    group = '',
-    having = '',
-    debug = false,
+    String group = '',
+    String having = '',
+    bool debug = false,
   }) async {
     if (group != '') group = 'GROUP BY $group';
     if (having != '') having = 'HAVING $having';
@@ -387,11 +403,11 @@ class MysqlUtils {
   ///```
   Future<double> min({
     required String table,
-    fields = '',
+    String fields = '',
     where = const {},
-    group = '',
-    having = '',
-    debug = false,
+    String group = '',
+    String having = '',
+    bool debug = false,
   }) async {
     if (group != '') group = 'GROUP BY $group';
     if (having != '') having = 'HAVING $having';
@@ -419,18 +435,26 @@ class MysqlUtils {
   ///   order: 'id desc',
   ///   limit: 10,//10 or '10 ,100'
   ///   debug: false,
-  ///   where: {'email': 'xxx@google.com','id': ['between', '1,4'],'email': ['=', 'sss@google.com'],'news_title': ['like', '%name%'],'user_id': ['>', 1]},
+  ///   where: {
+  ///     'email': 'xxx@google.com',
+  ///     'id': ['between', '1,4'],
+  ///     'email2': ['=', 'sss@google.com'],
+  ///     'news_title': ['like', '%name%'],
+  ///     'user_id': ['>', 1],
+  ///     '_SQL': '(`isNet`=1 OR `isNet`=2)',
+  ///   },
+  ///   //where:'`id`=1 AND name like "%jame%"',
   /// );
   ///```
   Future<List<dynamic>> getAll({
     required String table,
-    fields = '*',
+    String fields = '*',
     where = const {},
-    group = '',
-    having = '',
-    order = '',
-    limit = '',
-    debug = false,
+    String order = '',
+    dynamic limit = '',
+    String group = '',
+    String having = '',
+    bool debug = false,
   }) async {
     if (group != '') group = 'GROUP BY $group';
     if (having != '') having = 'HAVING $having';
@@ -460,17 +484,25 @@ class MysqlUtils {
   ///   having: 'name',
   ///   order: 'id desc',
   ///   debug: false,
-  ///   where: {'email': 'xxx@google.com'},
+  ///   where: {
+  ///     'email': 'xxx@google.com',
+  ///     'id': ['between', '1,4'],
+  ///     'email2': ['=', 'sss@google.com'],
+  ///     'news_title': ['like', '%name%'],
+  ///     'user_id': ['>', 1],
+  ///     '_SQL': '(`isNet`=1 OR `isNet`=2)',
+  ///   },
+  ///   //where:'`id`=1 AND name like "%jame%"',
   /// );
   ///```
   Future<Map> getOne({
     required String table,
-    fields = '*',
+    String fields = '*',
     where = const {},
-    group = '',
-    having = '',
-    order = '',
-    debug = false,
+    String group = '',
+    String having = '',
+    String order = '',
+    bool debug = false,
   }) async {
     List<dynamic> res = await getAll(
       table: table,
@@ -529,29 +561,32 @@ class MysqlUtils {
   ///where parsw
   String _whereParse(dynamic where) {
     String _where = '';
-    List<String> _fields = [];
     if (where is String && where != '') {
       _where = 'WHERE $where';
     } else if (where is Map && where.isNotEmpty) {
       var _keys = '';
       where.forEach((key, value) {
-        _fields.add(key);
-        if (value is String || value is num) {
+        if (key == '_SQL') {
+          if (_keys == '') {
+            _keys = '${sqlEscapeString(value)}';
+          } else {
+            _keys += ' AND ${sqlEscapeString(value)}';
+          }
+        } else if (value is String || value is num) {
           if (value is String) {
             if (_keys == '') {
-              _keys = '$key = \'$value\'';
+              _keys = '`$key` = \'${sqlEscapeString(value)}\'';
             } else {
-              _keys += ' AND $key = \'$value\'';
+              _keys += ' AND `$key`= \'${sqlEscapeString(value)}\'';
             }
           } else if (value is num) {
             if (_keys == '') {
-              _keys = '($key = $value)';
+              _keys = '(`$key` = $value)';
             } else {
-              _keys += ' AND ($key = $value)';
+              _keys += ' AND (`$key` = $value)';
             }
           }
-        }
-        if (value is List) {
+        } else if (value is List) {
           switch (value[0]) {
             case 'in':
             case 'notin':
@@ -569,28 +604,34 @@ class MysqlUtils {
               };
               String _wh = '';
               if (value[0] == 'in' || value[0] == 'notin') {
-                _wh = '$key ${_ex[value[0]]}(${value[1].join(',')})';
+                _wh = '`$key` ${_ex[value[0]]}(${value[1].join(',')})';
               }
               if (value[0] == 'between' || value[0] == 'notbetween') {
-                _wh = '($key ${_ex[value[0]]} ${value[1]} AND ${value[2]})';
+                _wh = '(`$key` ${_ex[value[0]]} ${value[1]} AND ${value[2]})';
               }
               if (value[0] == 'like' || value[0] == 'notlike') {
-                _wh = '($key ${_ex[value[0]]} \'${value[1]}\')';
+                _wh =
+                    '(`$key` ${_ex[value[0]]} \'${sqlEscapeString(value[1])}\')';
               }
+
               if (_keys == '') {
                 _keys = _wh;
               } else {
                 _keys += ' AND $_wh';
               }
               break;
-            default:
+            case '>':
+            case '<':
+            case '=':
+            case '<>':
               //>,=,<,<>
-              String _wh = '($key ${value[0]} ${value[1]})';
+              String _wh = '(`$key` ${value[0]} ${value[1]})';
               if (_keys == '') {
                 _keys = _wh;
               } else {
                 _keys += ' AND $_wh';
               }
+              break;
           }
         }
       });
@@ -689,6 +730,19 @@ class MysqlUtils {
     if (sqlLog != null) {
       sqlLog!(sql);
     }
+  }
+
+  ///SQL-escape a string.
+  String sqlEscapeString(String sqlString) {
+    if (!sqlEscape) {
+      return sqlString;
+    }
+    if (sqlString == '') {
+      return '';
+    }
+    //input = input.replaceAll('\\', '\\\\');
+    sqlString = sqlString.replaceAll('\'', '\\\'');
+    return sqlString;
   }
 }
 

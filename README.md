@@ -6,6 +6,8 @@ Flutter mysql plugin helps extend classes.
 Since 2.0.0, the mysql_client extension library is used, which is more stable.
 Try to be compatible with the method before version 2.0.0.
 
+If you use sqlite, you can also try [sqlite_utils](https://pub.dev/packages/sqlite_utils).
+
 [简体中文](README_ZH.md)
 
 ### Pub install
@@ -15,6 +17,8 @@ Try to be compatible with the method before version 2.0.0.
 ### APIs
 
 #### Initialization connection
+
+Compared with 1.0, the initialization parameters have changed. Please refer to the following modifications, use the singleton mode, and call close(); after use to close the database connection.
 
 ```yaml
  var db = MysqlUtils(
@@ -29,6 +33,7 @@ Try to be compatible with the method before version 2.0.0.
     'prefix': 'prefix_',
     'pool': true,
     'collation': 'utf8mb4_general_ci',
+    'sqlEscape':true,
   },
   errorLog: (error) {
     print(error);
@@ -44,12 +49,25 @@ Try to be compatible with the method before version 2.0.0.
 
 #### query
 
-Native query
+Native query, note that the usage here is different from version 1.0, 2.0 inherits the method of mysql_client
 
 ```yaml
 var row = await db
-    .query('select id from Product where id=? or description like ?', [1, 'ce%']);
-print(row.rows.first.assoc());
+    .query('select id from Product where id=:id or description like :description',{
+      'id':1,
+      'description':'%ce%'
+    });
+print(row.toMap());
+//// print(row.rowsAssoc.first.assoc());
+// for (var item in row.rowsAssoc) {
+//   print(item.assoc());
+// }
+// for (final row in row.rowsAssoc) {
+//   print(row.colAt(0));
+//   print(row.colByName("nickname"));
+//   print(row.assoc());
+// }
+// db.close();
 `````
 
 #### getAll(getOne) Multi table
@@ -78,8 +96,15 @@ var row = await db.getOne(
   //having: 'name',
   //order: 'id desc',
   //limit: 10,//10 or '10 ,100'
-  //where: 'email=xxx@google.com',
-  where: {'email': 'xxx@google.com'},
+//   where: {
+//     'email': 'xxx@google.com',
+//     'id': ['between', '1,4'],
+//     'email2': ['=', 'sss@google.com'],
+//     'news_title': ['like', '%name%'],
+//     'user_id': ['>', 1],
+//     '_SQL': '(`isNet`=1 OR `isNet`=2)',
+//   },
+  //where:'`id`=1 AND name like "%jame%"',
 );
 print(row);
 ```
@@ -97,27 +122,27 @@ var row = await db.getAll(
   //having: 'name',
   //order: 'id desc',
   //limit: 10,//10 or '10 ,100'
-  where: {
-    'email': 'xxx@dd.com',
-    //'id': ['between', 0, 1],
-    //'id': ['notbetween', 0, 2],
-    //'id': ['in', [1,2,3]],
-    //'id': ['notin', [1,2,3]],
-    //'email': ['=', 'sss@cc.com'],
-    //'news_title': ['like', '%name%'],
-    //'user_id': ['>', 1],
-  },
+//   where: {
+//     'email': 'xxx@google.com',
+//     'id': ['between', '1,4'],
+//     'email2': ['=', 'sss@google.com'],
+//     'news_title': ['like', '%name%'],
+//     'user_id': ['>', 1],
+//     '_SQL': '(`isNet`=1 OR `isNet`=2)',
+//   },
+  //where:'`id`=1 AND name like "%jame%"',
 );
 print(row);
 ```
 
 #### insert
 
-Add a data
+Add a data, return lastInsertID.
 
 ```yaml
 await db.insert(
   table: 'table',
+  debug: false,
   insertData: {
     'telphone': '+113888888888',
     'create_time': 1620577162252,
@@ -128,11 +153,12 @@ await db.insert(
 
 #### insertAll
 
-Add multiple data
+Add multiple data, return affectedRows.
 
 ```yaml
  await db.insertAll(
   table: 'table',
+  debug: false,
   insertData: [
       {
         'telphone': '13888888888',
@@ -227,19 +253,14 @@ await db.max(
 
 #### Transaction
 
-Transaction support
+Transaction support, In case of exception, transaction will roll back automatically.
 
 ```yaml
 await db.startTrans();
-var res1 = await db.delete(
-  table:'table',
-  where: {'id':1}
-);
-if(res1>0){
-  await db.commit();
-}else{
-  await db.rollback();
-}
+await db.delete(table: 'user', where: {'id': 25}, debug: true);
+//await db.delete(table: 'user1', where: {'id': 26}, debug: true);
+await db.commit();
+await db.close();
 ```
 
 #### isConnectionAlive

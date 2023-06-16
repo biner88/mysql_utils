@@ -5,6 +5,7 @@
 Flutter mysql plugin 帮助扩展类.
 从2.0.0开始使用mysql_client扩展库，更稳定。
 尽量兼容2.0.0以前版本方法。
+如果您使用sqlite，也可以尝试下 [sqlite_utils](https://pub.dev/packages/sqlite_utils).
 
 [English](README.md)
 
@@ -15,6 +16,8 @@ Flutter mysql plugin 帮助扩展类.
 ### APIs
 
 #### 初始化连接
+
+相比1.0，初始化参数有变化，请参照以下修改，使用单例模式，使用完请调用 close(); 关闭数据库连接。
 
 ```yaml
  var db = MysqlUtils(
@@ -27,8 +30,9 @@ Flutter mysql plugin 帮助扩展类.
     'maxConnections': 10,
     'secure': false,
     'prefix': 'prefix_',
-    'pool': true,
+    'pool': false,
     'collation': 'utf8mb4_general_ci',
+    'sqlEscape':true,
   },
   errorLog: (error) {
     print(error);
@@ -44,12 +48,25 @@ Flutter mysql plugin 帮助扩展类.
 
 #### query
 
-原生查询
+原生查询，注意这里和1.0版使用方式不一样，2.0继承了mysql_client的方法
 
 ```yaml
 var row = await db
-    .query('select id from Product where id=? or description like ?', [1, 'ce%']);
-print(row.rows.first.assoc());
+    .query('select id from Product where id=:id or description like :description',{
+      'id':1,
+      'description':'%ce%'
+    });
+print(row.toMap());
+//// print(row.rowsAssoc.first.assoc());
+// for (var item in row.rowsAssoc) {
+//   print(item.assoc());
+// }
+// for (final row in row.rowsAssoc) {
+//   print(row.colAt(0));
+//   print(row.colByName("nickname"));
+//   print(row.assoc());
+// }
+// db.close();
 `````
 
 #### 多表查询
@@ -113,11 +130,12 @@ print(row);
 
 #### insert
 
-增加一条数据
+增加一条数据，返回新增的ID
 
 ```yaml
 await db.insert(
-  table: 'table',
+  table: 'table',  
+  debug: false,
   insertData: {
     'telphone': '+113888888888',
     'create_time': 1620577162252,
@@ -128,11 +146,12 @@ await db.insert(
 
 #### insertAll
 
-增加多条数据
+增加多条数据, 返回影响的记录数
 
 ```yaml
  await db.insertAll(
   table: 'table',
+  debug: false,
   insertData: [
       {
         'telphone': '13888888888',
@@ -228,20 +247,15 @@ await db.max(
 
 #### Transaction
 
-事务支持
+事务支持, 发生错误自动回滚
 
 ```yaml
 await db.startTrans();
-var res1 = await db.delete(
-  table:'table',
-  where: {'id':1}
-);
-if(res1>0){
-  await db.commit();
-}else{
-  await db.rollback();
-}
-  ```
+await db.delete(table: 'user', where: {'id': 25}, debug: true);
+//await db.delete(table: 'user1', where: {'id': 26}, debug: true);
+await db.commit();
+await db.close();
+```
 
 #### isConnectionAlive
 

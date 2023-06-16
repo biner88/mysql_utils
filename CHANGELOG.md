@@ -1,6 +1,26 @@
+## [2.1.23]
+
+* Added settings `sqlEscape: true`
+
+## [2.1.2]
+
+* Updated README.md
+
+## [2.1.1]
+
+* Updated mysql_client: ^0.0.27
+
+## [2.1.0]
+
+* Fixed insertAll: debug = false
+
+## [2.0.11]
+
+* Updated mysql_client: ^0.0.24
+
 ## [2.0.10]
 
-* Fix _rows.
+* Fixed _rows.
 
 ## [2.0.9]
 
@@ -8,7 +28,7 @@
 
 ## [2.0.8]
 
-* Fix affectedRows
+* Fixed affectedRows
 
 ## [2.0.7]
 
@@ -20,19 +40,19 @@
 
 ## [2.0.5]
 
-* fix Multi database link.
+* Fixed Multi database link.
 
 ## [2.0.4]
 
-* Fix transaction.
+* Fixed transaction.
 
 ## [2.0.3]
 
-* Fix return data type.
+* Fixed return data type.
 
 ## [2.0.2]
 
-* Fix Transactions.
+* Fixed Transactions.
 
 ## [2.0.1]
 
@@ -40,7 +60,7 @@
 
 ## [2.0.0]
 
-* Change the library to mysql_client.
+* Changed the library to mysql_client.
 
 ## [1.0.8]
 
@@ -67,7 +87,7 @@
 ## [1.0.3]
 
 * Fix Bug [#3](https://github.com/biner88/mysql_utils/issues/3)
-* Add Where `in`,                             `between`,  `notbetween` and demo.
+* Add Where `in`,                                                `between`,  `notbetween` and demo.
 
 ## [1.0.2]
 

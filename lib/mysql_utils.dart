@@ -624,8 +624,13 @@ class MysqlUtils {
             case '<':
             case '=':
             case '<>':
-              //>,=,<,<>
-              String _wh = '(`$key` ${value[0]} ${value[1]})';
+            case '!=':
+              //>,=,<,<>,!=
+              var val = value[1];
+              if (value[1] is String) {
+                val = '\'${value[1]}\'';
+              }
+              String _wh = '(`$key` ${value[0]} $val)';
               if (_keys == '') {
                 _keys = _wh;
               } else {

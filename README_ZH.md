@@ -95,7 +95,19 @@ var row = await db.getOne(
   //having: 'name',
   //order: 'id desc',
   //limit: 10,//10 or '10 ,100'
-  where: {'email': 'xxx@dd.com'},
+//   where: {
+//     'email': 'xxx@google.com',
+//     'id': ['between', '1,4'],
+//     'email2': ['=', 'sss@google.com'],
+//     'news_title': ['like', '%name%'],
+//     'user_id': ['>', 1],
+//     'user_id': ['<', 1],
+//     'user_id': ['<>', 1],
+//     'user_id': ['=', 1],
+//     'email3': ['!=', 'sss@google.com'],
+//     '_SQL': '(`isNet`=1 OR `isNet`=2)',
+//   },
+  //where:'`id`=1 AND name like "%jame%"',
 );
 print(row);
 ```
@@ -113,17 +125,15 @@ var row = await db.getAll(
   //having: 'name',
   //order: 'id desc',
   //limit: 10,//10 or '10 ,100'
-  where: {
-    'email': 'xxx@dd.com',
-    //'id': ['between', 0, 1],
-    //'id': ['notbetween', 0, 2],
-    //'id': ['in', [1,2,3]],
-    //'id': ['notin', [1,2,3]],
-    //'email': ['=', 'sss@cc.com'],
-    //'news_title': ['like', '%name%'],
-    //'user_id': ['>', 1],
-
-  },
+//   where: {
+//     'email': 'xxx@google.com',
+//     'id': ['between', '1,4'],
+//     'email2': ['=', 'sss@google.com'],
+//     'news_title': ['like', '%name%'],
+//     'user_id': ['>', 1],
+//     '_SQL': '(`isNet`=1 OR `isNet`=2)',
+//   },
+  //where:'`id`=1 AND name like "%jame%"',
 );
 print(row);
 ```

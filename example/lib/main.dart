@@ -28,7 +28,8 @@ Future main() async {
       print('whenComplete');
     },
   );
-  ////insert
+
+  //insert
   var res3 = await db.insert(
     table: 'user',
     insertData: {

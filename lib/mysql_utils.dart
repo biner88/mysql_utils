@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:mysql_client/mysql_client.dart';
+import 'package:mysql_client_plus/mysql_client_plus.dart';
 
 ///mysql helper
 class MysqlUtils {
@@ -137,7 +137,7 @@ class MysqlUtils {
   ///   where: {'id':1}
   /// );
   /// ```
-  Future<int> delete({
+  Future<BigInt> delete({
     required String table,
     required where,
     bool debug = false,
@@ -162,7 +162,7 @@ class MysqlUtils {
   ///   'id':1,
   /// });
   ///```
-  Future<int> update({
+  Future<BigInt> update({
     required String table,
     required Map<String, dynamic> updateData,
     required where,
@@ -211,7 +211,7 @@ class MysqlUtils {
   /// ]);
   ///```
 
-  Future<int> insertAll({
+  Future<BigInt> insertAll({
     required String table,
     required List<Map<String, dynamic>> insertData,
     replace = false,
@@ -259,7 +259,7 @@ class MysqlUtils {
   ///   },
   /// );
   ///```
-  Future<int> insert({
+  Future<BigInt> insert({
     required String table,
     required Map<String, dynamic> insertData,
     replace = false,
@@ -756,10 +756,10 @@ class ResultFormat {
   List cols = [];
   List rows = [];
   List rowsAssoc = [];
-  int affectedRows = 0;
+  BigInt affectedRows = BigInt.zero;
   int numOfRows = 0;
   int numOfColumns = 0;
-  int lastInsertID = 0;
+  BigInt lastInsertID = BigInt.zero;
   Stream<ResultSetRow>? rowsStream;
   ResultFormat({
     required this.cols,
@@ -787,11 +787,11 @@ class ResultFormat {
     cols = _cols;
     rows = _rows;
     rowsAssoc = _rowsAssoc;
-    affectedRows = results.affectedRows.toInt();
+    affectedRows = results.affectedRows;
     numOfRows = results.numOfRows;
     numOfColumns = results.numOfColumns;
     rowsStream = results.rowsStream;
-    lastInsertID = results.lastInsertID.toInt();
+    lastInsertID = results.lastInsertID;
   }
   Map<String, dynamic> toMap() {
     final Map<String, dynamic> data = <String, dynamic>{};
@@ -809,11 +809,11 @@ class ResultFormat {
   ResultFormat.empty() {
     cols = [];
     rows = [];
-    affectedRows = 0;
+    affectedRows = BigInt.zero;
     rowsAssoc = [];
     numOfRows = 0;
     numOfColumns = 0;
     rowsStream = null;
-    lastInsertID = 0;
+    lastInsertID = BigInt.zero;
   }
 }

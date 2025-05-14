@@ -6,18 +6,23 @@ import 'package:mysql_utils/mysql_utils.dart';
 Future main() async {
   var rng = new Random();
   final db = MysqlUtils(
-    settings: {
-      'host': '127.0.0.1',
-      'port': 3306,
-      'user': 'root',
-      'password': 'root',
-      'db': 'test',
-      'maxConnections': 10,
-      'secure': false,
-      'prefix': 'su_',
-      'pool': false,
-      'collation': 'utf8mb4_general_ci',
-    },
+    settings: MysqlUtilsSettings(
+      host: '127.0.0.1',
+      port: 3306,
+      user: 'your_user',
+      password: 'your_password',
+      db: 'testdb',
+      secure: true,
+      prefix: '',
+      maxConnections: 10000,
+      timeoutMs: 10000,
+      sqlEscape: true,
+      pool: true,
+      collation: 'utf8mb4_general_ci',
+      // debug: true,
+      // securityContext: SecurityContext(),
+      // onBadCertificate: (certificate) => true,
+    ),
     errorLog: (error) {
       print(error);
     },

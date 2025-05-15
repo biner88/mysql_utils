@@ -3,9 +3,10 @@
 [![Pub](https://img.shields.io/pub/v/mysql_utils.svg)](https://pub.dev/packages/mysql_utils)
 
 Flutter mysql plugin 帮助扩展类.
-从2.0.0开始使用mysql_client扩展库，更稳定。
-尽量兼容2.0.0以前版本方法。
-如果您使用sqlite，也可以尝试下 [sqlite_utils](https://pub.dev/packages/sqlite_utils).
+
+mysql_client 已放弃维护，现在由本库作者继续维护，新库是 [mysql_client_plus](https://pub.dev/packages/mysql_client_plus) [![Pub](https://img.shields.io/pub/v/mysql_client_plus.svg)](https://pub.dev/packages/mysql_client_plus)。
+
+如果您使用sqlite，也可以尝试下 [sqlite_utils](https://pub.dev/packages/sqlite_utils) .
 
 [English](README.md)
 
@@ -17,23 +18,42 @@ Flutter mysql plugin 帮助扩展类.
 
 #### 初始化连接
 
-相比1.0，初始化参数有变化，请参照以下修改，使用单例模式，使用完请调用 close(); 关闭数据库连接。
+使用单例模式，使用完请调用 `close()` 关闭数据库连接。
 
-```yaml
+```dart
  var db = MysqlUtils(
-  settings: {
-    'host': '127.0.0.1',
-    'port': 3306,
-    'user': 'root',
-    'password': 'root',
-    'db': 'test',
-    'maxConnections': 10,
-    'secure': false,
-    'prefix': 'prefix_',
-    'pool': false,
-    'collation': 'utf8mb4_general_ci',
-    'sqlEscape': true,
-  },
+  settings: MysqlUtilsSettings(
+    // 配置数据库连接信息
+    host: '127.0.0.1',
+    // 端口
+    port: 3306,
+    // 数据库用户名
+    user: 'your_user',
+    // 数据库密码
+    password: 'your_password',
+    // 数据库名称
+    db: 'testdb',
+    // 是否使用SSL
+    secure: true,
+    // 表前缀
+    prefix: '',
+    // 最大连接数
+    maxConnections: 1000,
+    // 连接超时
+    timeoutMs: 10000,
+    // 是否使用SQL转义
+    sqlEscape: true,
+    // 是否使用连接池
+    pool: true,
+    // 字符编码
+    collation: 'utf8mb4_general_ci',
+    // 是否开启debug
+    debug: true,
+    // 是否使用SSL
+    // securityContext: SecurityContext(),
+    // SSL证书
+    // onBadCertificate: (certificate) => true,
+  ),
   errorLog: (error) {
     print(error);
   },
@@ -48,9 +68,9 @@ Flutter mysql plugin 帮助扩展类.
 
 #### query
 
-原生查询，注意这里和1.0版使用方式不一样，2.0继承了mysql_client的方法
+原生查询
 
-```yaml
+```dart
 var row = await db
     .query('select id from Product where id=:id or description like :description',{
       'id':1,
@@ -73,7 +93,7 @@ print(row.toMap());
 
 多表查询
 
-```yaml
+```dart
 var res = await db.getAll(
   table: 'user tb1,upload tb2',
   fields: 'tb2.fileSize',
@@ -87,7 +107,7 @@ print(res);
 
 查询一条数据
 
-```yaml
+```dart
 var row = await db.getOne(
   table: 'table',
   fields: '*',
@@ -116,7 +136,7 @@ print(row);
 
 查询多条数据
 
-```yaml
+```dart
 
 var row = await db.getAll(
   table: 'table',
@@ -142,12 +162,15 @@ print(row);
 
 增加一条数据，返回新增的ID
 
-```yaml
+```dart
 await db.insert(
   table: 'table',  
   debug: false,
   insertData: {
     'telphone': '+113888888888',
+    'blob_data':Uint8List.fromList([0x48, 0x65, 0x6c, 0x6c, 0x6f]),
+    'json_data':'{"name": "MysqlUtils"}',
+    'date_data': '2025-01-01',
     'create_time': 1620577162252,
     'update_time': 1620577162252,
   },
@@ -158,7 +181,7 @@ await db.insert(
 
 增加多条数据, 返回影响的记录数
 
-```yaml
+```dart
  await db.insertAll(
   table: 'table',
   debug: false,
@@ -183,7 +206,7 @@ await db.insert(
 
 更新数据
 
-```yaml
+```dart
 await db.update(
   table: 'table',
   updateData:{
@@ -201,7 +224,7 @@ await db.update(
 
 删除数据
 
-```yaml
+```dart
 await db.delete(
   table:'table',
   where: {'id':1}
@@ -210,9 +233,9 @@ await db.delete(
 
 #### count
 
-统计数据
+统计数据记录数
 
-```yaml
+```dart
 await db.count(
   table: 'table',
   fields: '*',
@@ -224,7 +247,9 @@ await db.count(
 
 #### avg
 
-```yaml
+获取指定字段的平均值
+
+```dart
 await db.avg(
   table: 'table',
   fields: 'price',
@@ -235,7 +260,9 @@ await db.avg(
 
 #### min
 
-```yaml
+获取指定字段的最小值
+
+```dart
 await db.min(
   table: 'table',
   fields: 'price',
@@ -246,7 +273,9 @@ await db.min(
 
 #### max
 
-```yaml
+获取指定字段的最大值
+
+```dart
 await db.max(
   table: 'table',
   fields: 'price',
@@ -259,7 +288,7 @@ await db.max(
 
 事务支持, 发生错误自动回滚
 
-```yaml
+```dart
 await db.startTrans();
 await db.delete(table: 'user', where: {'id': 25}, debug: true);
 //await db.delete(table: 'user1', where: {'id': 26}, debug: true);
@@ -271,7 +300,7 @@ await db.close();
 
 连接是否关闭
 
-```yaml
+```dart
 var isAlive = await db.isConnectionAlive();
 if (isAlive) print('mysql is isAlive');
 ```

@@ -10,12 +10,12 @@ void main() {
       settings: MysqlUtilsSettings(
         host: '127.0.0.1',
         port: 3306,
-        user: 'your_user_sha256',
-        password: 'your_password_sha256',
+        user: 'your_user',
+        password: 'your_password',
         db: 'testdb',
         secure: true,
         prefix: '',
-        maxConnections: 10000,
+        maxConnections: 1000,
         timeoutMs: 10000,
         sqlEscape: true,
         pool: true,
@@ -159,6 +159,18 @@ void main() {
     expect(req1, 1003);
   });
 
+  test('Execute: transaction', () async {
+    await db.startTrans();
+    var req1 = await db.delete(
+      table: 'test_data',
+      where: {
+        'id': ['>', 0]
+      },
+    );
+    expect(req1, BigInt.from(3));
+    await db.rollback();
+  });
+
   test('Execute: delete ', () async {
     var req1 = await db.delete(
       table: 'test_data',
@@ -167,6 +179,10 @@ void main() {
       },
     );
     expect(req1, BigInt.from(3));
+    await db.query("DROP TABLE IF EXISTS `test_data`");
+  });
+
+  test('Execute: drop table ', () async {
     await db.query("DROP TABLE IF EXISTS `test_data`");
   });
 }

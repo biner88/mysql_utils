@@ -54,7 +54,8 @@ class MysqlUtils {
   }
 
   ///create single connection
-  Future<MySQLConnection> createConnectionSingle(MysqlUtilsSettings settings) async {
+  Future<MySQLConnection> createConnectionSingle(
+      MysqlUtilsSettings settings) async {
     final conn = await MySQLConnection.createConnection(
       host: settings.host,
       port: settings.port,
@@ -71,7 +72,8 @@ class MysqlUtils {
   }
 
   ///create pool connection
-  Future<MySQLConnectionPool> createConnectionPool(MysqlUtilsSettings settings) async {
+  Future<MySQLConnectionPool> createConnectionPool(
+      MysqlUtilsSettings settings) async {
     return MySQLConnectionPool(
       host: settings.host,
       port: settings.port,
@@ -90,7 +92,8 @@ class MysqlUtils {
   ///isConnectionAlive
   Future<bool> isConnectionAlive() async {
     try {
-      await query('select 1').timeout(Duration(milliseconds: 500), onTimeout: () {
+      await query('select 1').timeout(Duration(milliseconds: 500),
+          onTimeout: () {
         throw TimeoutException('test isConnectionAlive timeout.');
       });
       return true;
@@ -144,7 +147,8 @@ class MysqlUtils {
   }) async {
     table = _tableParse(table);
     String _where = _whereParse(where);
-    ResultFormat results = await query('DELETE FROM $table $_where ', debug: debug);
+    ResultFormat results =
+        await query('DELETE FROM $table $_where ', debug: debug);
     return results.affectedRows;
   }
 
@@ -242,7 +246,8 @@ class MysqlUtils {
     });
     String _fieldsString = _fields.join(',');
     String _valuesString = _values.join(',');
-    String _sql = '${replace ? 'REPLACE' : 'INSERT'} INTO $table ($_fieldsString) VALUES $_valuesString';
+    String _sql =
+        '${replace ? 'REPLACE' : 'INSERT'} INTO $table ($_fieldsString) VALUES $_valuesString';
     ResultFormat result = await query(_sql, debug: debug);
     return result.affectedRows;
   }
@@ -280,7 +285,8 @@ class MysqlUtils {
     });
     String _fieldsString = _fields.join(',');
     String _valuesString = _values.join(',');
-    String _sql = '${replace ? 'REPLACE' : 'INSERT'} INTO $table ($_fieldsString) VALUES ($_valuesString)';
+    String _sql =
+        '${replace ? 'REPLACE' : 'INSERT'} INTO $table ($_fieldsString) VALUES ($_valuesString)';
     ResultFormat result = await query(_sql, values: insertData, debug: debug);
     return result.lastInsertID;
   }
@@ -311,7 +317,9 @@ class MysqlUtils {
     String _where = _whereParse(where);
     table = _tableParse(table);
 
-    ResultFormat results = await query('SELECT count($fields) as _count FROM $table $_where $group $having', debug: debug);
+    ResultFormat results = await query(
+        'SELECT count($fields) as _count FROM $table $_where $group $having',
+        debug: debug);
     return results.rows.first['_count'];
   }
 
@@ -342,7 +350,9 @@ class MysqlUtils {
     String _where = _whereParse(where);
     table = _tableParse(table);
 
-    ResultFormat results = await query('SELECT AVG($fields) as _avg FROM $table $_where $group $having', debug: debug);
+    ResultFormat results = await query(
+        'SELECT AVG($fields) as _avg FROM $table $_where $group $having',
+        debug: debug);
     return double.parse(results.rows.first['_avg'] ?? '0');
   }
 
@@ -373,7 +383,9 @@ class MysqlUtils {
     String _where = _whereParse(where);
     table = _tableParse(table);
 
-    ResultFormat results = await query('SELECT max($fields) as _max FROM $table $_where $group $having', debug: debug);
+    ResultFormat results = await query(
+        'SELECT max($fields) as _max FROM $table $_where $group $having',
+        debug: debug);
     var n = results.rows.first['_max'];
     if (n is int) {
       return n.toDouble();
@@ -408,7 +420,9 @@ class MysqlUtils {
     String _where = _whereParse(where);
     table = _tableParse(table);
 
-    ResultFormat results = await query('SELECT MIN($fields) as _min FROM $table $_where $group $having', debug: debug);
+    ResultFormat results = await query(
+        'SELECT MIN($fields) as _min FROM $table $_where $group $having',
+        debug: debug);
     var n = results.rows.first['_min'];
     if (n is int) {
       return n.toDouble();
@@ -455,7 +469,8 @@ class MysqlUtils {
     table = _tableParse(table);
     limit = _limitParse(limit);
 
-    String _sql = 'SELECT $fields FROM $table $_where $group $having $order $limit';
+    String _sql =
+        'SELECT $fields FROM $table $_where $group $having $order $limit';
 
     ResultFormat results = await query(_sql, debug: debug);
 
@@ -600,7 +615,8 @@ class MysqlUtils {
                 _wh = '(`$key` ${_ex[value[0]]} ${value[1]} AND ${value[2]})';
               }
               if (value[0] == 'like' || value[0] == 'notlike') {
-                _wh = '(`$key` ${_ex[value[0]]} \'${sqlEscapeString(value[1])}\')';
+                _wh =
+                    '(`$key` ${_ex[value[0]]} \'${sqlEscapeString(value[1])}\')';
               }
 
               if (_keys == '') {
@@ -658,7 +674,7 @@ class MysqlUtils {
   }) async {
     var queryStr = '$sql  $values';
     queryTimes++;
-    if (debug) _sqlLog(queryStr);
+    if (debug || _settings.debug) _sqlLog(queryStr);
     bool transaction = false;
     if (sql == 'start transaction' || sql == 'commit' || sql == 'rollback') {
       transaction = true;
@@ -689,10 +705,11 @@ class MysqlUtils {
   }
 
   ///query multi
-  Future<List<int>> queryMulti(String sql, Iterable<List<Object?>> values, {debug = false}) async {
+  Future<List<int>> queryMulti(String sql, Iterable<List<Object?>> values,
+      {debug = false}) async {
     var queryStr = '$sql  $values';
     queryTimes++;
-    if (debug) _sqlLog(queryStr);
+    if (debug || _settings.debug) _sqlLog(queryStr);
     PreparedStmt stmt;
     if (_settings.pool) {
       stmt = await (await poolConn).prepare(sql);
@@ -709,7 +726,7 @@ class MysqlUtils {
     return res;
   }
 
-  ///error log report
+  /// error log
   void _errorLog(String e) {
     if (errorLog != null) {
       errorLog!(e);
@@ -718,14 +735,14 @@ class MysqlUtils {
     }
   }
 
-  ///debug sql report
+  /// sql log report
   void _sqlLog(String sql) {
     if (sqlLog != null) {
       sqlLog!(sql);
     }
   }
 
-  ///SQL-escape a string.
+  /// escape sql string
   String sqlEscapeString(String sqlString) {
     if (!sqlEscape) {
       return sqlString;
@@ -733,7 +750,6 @@ class MysqlUtils {
     if (sqlString == '') {
       return '';
     }
-    //input = input.replaceAll('\\', '\\\\');
     sqlString = sqlString.replaceAll('\'', '\\\'');
     return sqlString;
   }

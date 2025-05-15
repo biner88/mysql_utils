@@ -3,8 +3,8 @@
 [![Pub](https://img.shields.io/pub/v/mysql_utils.svg)](https://pub.dev/packages/mysql_utils)
 
 Flutter mysql plugin helps extend classes.
-Since 2.0.0, the mysql_client extension library is used, which is more stable.
-Try to be compatible with the method before version 2.0.0.
+
+mysql_client has been abandoned and is now maintained by the author of this library. The new library is [mysql_client_plus](https://pub.dev/packages/mysql_client_plus) [![Pub](https://img.shields.io/pub/v/mysql_client_plus.svg)](https://pub.dev/packages/mysql_client_plus)。
 
 If you use sqlite, you can also try [sqlite_utils](https://pub.dev/packages/sqlite_utils).
 
@@ -14,27 +14,58 @@ If you use sqlite, you can also try [sqlite_utils](https://pub.dev/packages/sqli
 
 [Install](https://pub.dev/packages/mysql_utils/install)
 
+## New features [2.1.7] 
+
+* Updated mysql_client_plus to version ^0.0.32
+* Updated settings from `Map` to `MysqlUtilsSettings` ⚠️⚠️⚠️
+* Added support for `BLOB` and `JSON` types
+* Added support for SSL certificates
+* Added support for calling stored procedures
+* Added support for `sha256_password` authentication
+* Added global `debug` option
+* Added tests
+
 ### APIs
 
 #### Initialization connection
 
-Compared with 1.0, the initialization parameters have changed. Please refer to the following modifications, use the singleton mode, and call close(); after use to close the database connection.
+Use the singleton mode, and call `close()` after use to close the database connection.
 
-```yaml
+```dart
  var db = MysqlUtils(
-  settings: {
-    'host': '127.0.0.1',
-    'port': 3306,
-    'user': 'root',
-    'password': 'root',
-    'db': 'test',
-    'maxConnections': 10,
-    'secure': false,
-    'prefix': 'prefix_',
-    'pool': true,
-    'collation': 'utf8mb4_general_ci',
-    'sqlEscape': true,
-  },
+  // ⚠️⚠️⚠️ settings from `Map` to `MysqlUtilsSettings`
+  settings: MysqlUtilsSettings(
+    // The hostname of the MySQL server, defaults to localhost.
+    host: '127.0.0.1',
+    // The port number to connect to, defaults to 3306.
+    port: 3306,
+    // The username to connect as, defaults to root.
+    user: 'your_user_sha256',
+    // The password to connect with, defaults to empty string.
+    password: 'your_password_sha256',
+    // The database to use, defaults to empty string.
+    db: 'testdb',
+    // Whether to use SSL, defaults to false.
+    secure: true,
+    // The prefix to use for table names, defaults to empty string.
+    prefix: '',
+    // The maximum number of connections to keep open, defaults to 1000.
+    maxConnections: 1000,
+    // The timeout in milliseconds for each connection, defaults to 10000.
+    timeoutMs: 10000,
+    // Whether to escape all queries, defaults to true.
+    sqlEscape: true,
+    // Whether to use a connection pool, defaults to false.
+    pool: true,
+    // The collation to use for all queries, defaults to utf8mb4_general_ci.
+    collation: 'utf8mb4_general_ci',
+    // Whether to use SSL, defaults to false.
+    debug: true,
+    // The SSL options to use for all queries, defaults to null.
+    // securityContext: SecurityContext(),
+    // sslMode: SslMode.require,
+    // onBadCertificate: (certificate) => true,
+  ),
   errorLog: (error) {
     print(error);
   },
@@ -51,7 +82,7 @@ Compared with 1.0, the initialization parameters have changed. Please refer to t
 
 Native query, note that the usage here is different from version 1.0, 2.0 inherits the method of mysql_client
 
-```yaml
+```dart
 var row = await db
     .query('select id from Product where id=:id or description like :description',{
       'id':1,
@@ -68,13 +99,13 @@ print(row.toMap());
 //   print(row.assoc());
 // }
 // db.close();
-`````
+```
 
-#### getAll(getOne) Multi table
+#### Multi table query
 
 Query Multi data , multi-table query
 
-```yaml
+```dart
 var res = await db.getAll(
   table: 'user tb1,upload tb2',
   fields: 'tb2.fileSize',
@@ -88,7 +119,7 @@ print(res);
 
 Query one data
 
-```yaml
+```dart
 var row = await db.getOne(
   table: 'table',
   fields: '*',
@@ -117,7 +148,7 @@ print(row);
 
 Query multiple data
 
-```yaml
+```dart
 
 var row = await db.getAll(
   table: 'table',
@@ -143,12 +174,16 @@ print(row);
 
 Add a data, return lastInsertID.
 
-```yaml
+```dart
 await db.insert(
   table: 'table',
   debug: false,
   insertData: {
     'telphone': '+113888888888',
+    'email': 'teenagex@dd.com',
+    'blob_data':Uint8List.fromList([0x48, 0x65, 0x6c, 0x6c, 0x6f]),
+    'json_data':'{"name": "MysqlUtils"}',
+    'date_data': '2025-01-01',
     'create_time': 1620577162252,
     'update_time': 1620577162252,
   },
@@ -159,7 +194,7 @@ await db.insert(
 
 Add multiple data, return affectedRows.
 
-```yaml
+```dart
  await db.insertAll(
   table: 'table',
   debug: false,
@@ -184,7 +219,7 @@ Add multiple data, return affectedRows.
 
 Update data
 
-```yaml
+```dart
 await db.update(
   table: 'table',
   updateData:{
@@ -202,7 +237,7 @@ await db.update(
 
 Delete data
 
-```yaml
+```dart
 await db.delete(
   table:'table',
   where: {'id':1}
@@ -213,7 +248,7 @@ await db.delete(
 
 Statistical data
 
-```yaml
+```dart
 await db.count(
   table: 'table',
   fields: '*',
@@ -224,7 +259,7 @@ await db.count(
 
 #### avg
 
-```yaml
+```dart
 await db.avg(
   table: 'table',
   fields: 'price',
@@ -235,7 +270,7 @@ await db.avg(
 
 #### min
 
-```yaml
+```dart
 await db.min(
   table: 'table',
   fields: 'price',
@@ -246,7 +281,7 @@ await db.min(
 
 #### max
 
-```yaml
+```dart
 await db.max(
   table: 'table',
   fields: 'price',
@@ -259,7 +294,7 @@ await db.max(
 
 Transaction support, In case of exception, transaction will roll back automatically.
 
-```yaml
+```dart
 await db.startTrans();
 await db.delete(table: 'user', where: {'id': 25}, debug: true);
 //await db.delete(table: 'user1', where: {'id': 26}, debug: true);
@@ -271,14 +306,13 @@ await db.close();
 
 Connection is open or closed
 
-```yaml
+```dart
 var isAlive = await db.isConnectionAlive();
 if (isAlive) print('mysql is isAlive');
 ```
 
-#### demo test
+#### Test
 
-```
-cd example
-dart run lib/main.dart
+```shell
+dart test
 ```

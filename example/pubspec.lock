@@ -134,9 +134,10 @@ packages:
   mysql_client_plus:
     dependency: transitive
     description:
-      path: "../../mysql_client_plus"
-      relative: true
-    source: path
+      name: mysql_client_plus
+      sha256: ad4baf3799504fa22bdfedca1146e2fb311fd0c9dfbacea9602d86e6ba2e1a85
+      url: "https://pub.dev"
+    source: hosted
     version: "0.0.32"
   mysql_utils:
     dependency: "direct main"
@@ -144,7 +145,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "2.1.6"
+    version: "2.1.7"
   path:
     dependency: transitive
     description:

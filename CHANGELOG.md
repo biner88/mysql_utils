@@ -1,5 +1,17 @@
+## [2.1.7]
+
+* Updated mysql_client_plus to version ^0.0.32
+* Updated settings from `Map` to `MysqlUtilsSettings` ⚠️⚠️⚠️
+* Added support for `BLOB` and `JSON` types  [#17](https://github.com/biner88/mysql_utils/issues/17)
+* Added support for SSL certificates
+* Added support for calling stored procedures  [#16](https://github.com/biner88/mysql_utils/issues/16)
+* Added support for `sha256_password` authentication
+* Added global `debug` option
+* Added tests
+
 ## [2.1.6]
 
+* Updated mysql_client_plus: ^0.0.31
 * Update dependencies
 
 ## [2.1.5]
@@ -97,7 +109,7 @@
 ## [1.0.3]
 
 * Fix Bug [#3](https://github.com/biner88/mysql_utils/issues/3)
-* Add Where `in`,                                                               `between`,  `notbetween` and demo.
+* Add Where `in`,                                                                                                                 `between`,  `notbetween` and demo.
 
 ## [1.0.2]
 

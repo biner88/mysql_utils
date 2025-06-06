@@ -64,7 +64,7 @@ void main() {
   test('Execute: insert data ', () async {
     Map<String, dynamic> data = {
       'int_column': 1001,
-      'string_column': 'text',
+      'string_column': 'text\'s',
       'datetime_column': '2025-01-01 12:00:00',
       'blob_column': Uint8List.fromList([0x48, 0x65, 0x6c, 0x6c, 0x6f]),
       'bool_column': true,
@@ -85,7 +85,7 @@ void main() {
   test('Execute: getOne ', () async {
     var req1 = await db.getOne(
       table: 'test_data',
-      fields: '*',
+      fields: 'id',
       where: {'id': 2},
     );
     expect(req1['id'], 2);
@@ -94,7 +94,7 @@ void main() {
   test('Execute: getAll ', () async {
     var req1 = await db.getAll(
       table: 'test_data',
-      fields: '*',
+      fields: 'id',
       where: {'int_column': 1001},
     );
     expect(req1.length, 3);
@@ -179,7 +179,6 @@ void main() {
       },
     );
     expect(req1, BigInt.from(3));
-    await db.query("DROP TABLE IF EXISTS `test_data`");
   });
 
   test('Execute: drop table ', () async {

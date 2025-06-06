@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:mysql_client_plus/mysql_client_plus.dart';
 import 'package:mysql_utils/mysql_utils.dart';
 
@@ -175,16 +174,18 @@ class MysqlUtils {
     }
 
     List<String> _setkeys = [];
+    List values = [];
     updateData.forEach((key, value) {
-      _setkeys.add('`$key` = :$key ');
+      _setkeys.add('`$key` = ?');
+      values.add(value);
     });
+    values.addAll(_whereAndValues.last);
 
     String _setValue = _setkeys.join(',');
     String _sql = 'UPDATE $table SET $_setValue ${_whereAndValues.first}';
     ResultFormat results = await query(
       _sql,
-      values: updateData,
-      whereValues: _whereAndValues.last,
+      whereValues: values,
       debug: debug,
     );
     return results.affectedRows;
@@ -214,37 +215,32 @@ class MysqlUtils {
   Future<BigInt> insertAll({
     required String table,
     required List<Map<String, dynamic>> insertData,
-    replace = false,
-    debug = false,
+    bool replace = false,
+    bool debug = false,
   }) async {
     if (insertData.isEmpty) {
       throw ('insertData.length!=0');
     }
+
     table = _tableParse(table);
-    List<String> _fields = [];
-    List<String> _values = [];
-    insertData.first.forEach((key, value) => _fields.add('`$key`'));
-    insertData.forEach((val) {
-      List _t = [];
-      val.forEach((key, value) {
-        if (value is num) {
-          _t.add(value);
-        } else if (value is bool) {
-          _t.add(value ? 1 : 0);
-        } else {
-          if (value is String) {
-            _t.add('\'${sqlEscapeString(value)}\'');
-          } else {
-            _t.add('\'$value\'');
-          }
-        }
-      });
-      _values.add('(${_t.join(',')})');
-    });
-    String _fieldsString = _fields.join(',');
-    String _valuesString = _values.join(',');
-    String _sql = '${replace ? 'REPLACE' : 'INSERT'} INTO $table ($_fieldsString) VALUES $_valuesString';
-    ResultFormat result = await query(_sql, debug: debug);
+
+    final firstRow = insertData.first;
+    final fields = firstRow.keys.toList();
+    final placeholders = List.filled(fields.length, '?').join(',');
+    final fieldsString = fields.map((k) => '`$k`').join(',');
+
+    final valuesPlaceholder = List.filled(insertData.length, '($placeholders)').join(',');
+
+    final values = <dynamic>[];
+    for (final row in insertData) {
+      for (final field in fields) {
+        values.add(row[field]);
+      }
+    }
+
+    final sql = '${replace ? 'REPLACE' : 'INSERT'} INTO $table ($fieldsString) VALUES $valuesPlaceholder';
+
+    final result = await query(sql, whereValues: values, debug: debug);
     return result.affectedRows;
   }
 
@@ -263,26 +259,23 @@ class MysqlUtils {
   Future<BigInt> insert({
     required String table,
     required Map<String, dynamic> insertData,
-    replace = false,
-    debug = false,
+    bool replace = false,
+    bool debug = false,
   }) async {
     if (insertData.isEmpty) {
-      throw ('insertData.length!=0');
+      throw ArgumentError('insertData cannot be empty');
     }
+
     table = _tableParse(table);
-    List<String> _fields = [];
-    List<String> _values = [];
-    insertData.forEach((key, value) {
-      _fields.add('`$key`');
-      _values.add(':$key');
-      if (sqlEscape && value is String) {
-        insertData[key] = sqlEscapeString(value);
-      }
-    });
-    String _fieldsString = _fields.join(',');
-    String _valuesString = _values.join(',');
-    String _sql = '${replace ? 'REPLACE' : 'INSERT'} INTO $table ($_fieldsString) VALUES ($_valuesString)';
-    ResultFormat result = await query(_sql, values: insertData, debug: debug);
+
+    final fields = insertData.keys.map((k) => '`$k`').toList();
+    final values = insertData.values.toList();
+    final placeholders = List.filled(fields.length, '?');
+
+    final sql = '${replace ? 'REPLACE' : 'INSERT'} INTO $table '
+        '(${fields.join(',')}) VALUES (${placeholders.join(',')})';
+
+    final result = await query(sql, whereValues: values, debug: debug);
     return result.lastInsertID;
   }
 
@@ -301,19 +294,23 @@ class MysqlUtils {
   Future<int> count({
     required String table,
     String fields = '*',
-    where = const {},
+    Map<String, dynamic> where = const {},
     String group = '',
     String having = '',
     bool debug = false,
   }) async {
-    if (group != '') group = 'GROUP BY $group';
-    if (having != '') having = 'HAVING $having';
-
-    List _whereAndValues = _whereParse(where);
     table = _tableParse(table);
-
-    ResultFormat results = await query('SELECT count($fields) as _count FROM $table ${_whereAndValues.first} $group $having', whereValues: _whereAndValues.last, debug: debug);
-    return results.rows.first['_count'];
+    final whereResult = _whereParse(where);
+    final whereClause = whereResult.first;
+    final whereValues = whereResult.last;
+    final groupClause = group.isNotEmpty ? ' GROUP BY $group' : '';
+    final havingClause = having.isNotEmpty ? ' HAVING $having' : '';
+    final sql = 'SELECT COUNT($fields) AS _count FROM $table $whereClause$groupClause$havingClause';
+    final result = await query(sql, whereValues: whereValues, debug: debug);
+    if (result.rows.isEmpty || result.rows.first['_count'] == null) {
+      return 0;
+    }
+    return (result.rows.first['_count'] as num).toInt();
   }
 
   ///```
@@ -330,21 +327,28 @@ class MysqlUtils {
   ///```
   Future<double> avg({
     required String table,
-    String fields = '',
-    where = const {},
+    required String fields,
+    Map<String, dynamic> where = const {},
     String group = '',
     String having = '',
     bool debug = false,
   }) async {
-    if (group != '') group = 'GROUP BY $group';
-    if (having != '') having = 'HAVING $having';
-    if (fields == '') throw 'fields cant be empty';
+    if (fields.isEmpty) {
+      throw ArgumentError('fields cannot be empty');
+    }
 
-    List _whereAndValues = _whereParse(where);
     table = _tableParse(table);
-
-    ResultFormat results = await query('SELECT AVG($fields) as _avg FROM $table ${_whereAndValues.first} $group $having', whereValues: _whereAndValues.last, debug: debug);
-    return double.parse(results.rows.first['_avg'] ?? '0');
+    final whereResult = _whereParse(where);
+    final whereClause = whereResult.first;
+    final whereValues = whereResult.last;
+    final groupClause = group.isNotEmpty ? ' GROUP BY $group' : '';
+    final havingClause = having.isNotEmpty ? ' HAVING $having' : '';
+    final sql = 'SELECT AVG($fields) AS _avg FROM $table$whereClause$groupClause$havingClause';
+    final result = await query(sql, whereValues: whereValues, debug: debug);
+    final rawValue = result.rows.first['_avg'];
+    if (rawValue == null) return 0.0;
+    if (rawValue is num) return rawValue.toDouble();
+    return double.tryParse(rawValue.toString()) ?? 0.0;
   }
 
   ///```
@@ -361,25 +365,28 @@ class MysqlUtils {
   ///```
   Future<double> max({
     required String table,
-    String fields = '',
-    where = const {},
+    required String fields,
+    Map<String, dynamic> where = const {},
     String group = '',
     String having = '',
     bool debug = false,
   }) async {
-    if (group != '') group = 'GROUP BY $group';
-    if (having != '') having = 'HAVING $having';
-    if (fields == '') throw 'fields cant be empty';
-    List _whereAndValues = _whereParse(where);
-    table = _tableParse(table);
-
-    ResultFormat results = await query('SELECT max($fields) as _max FROM $table ${_whereAndValues.first} $group $having', whereValues: _whereAndValues.last, debug: debug);
-    var n = results.rows.first['_max'];
-    if (n is int) {
-      return n.toDouble();
-    } else {
-      return n;
+    if (fields.isEmpty) {
+      throw ArgumentError('fields cannot be empty');
     }
+
+    table = _tableParse(table);
+    final whereResult = _whereParse(where);
+    final whereClause = whereResult.first;
+    final whereValues = whereResult.last;
+    final groupClause = group.isNotEmpty ? ' GROUP BY $group' : '';
+    final havingClause = having.isNotEmpty ? ' HAVING $having' : '';
+    final sql = 'SELECT MAX($fields) AS _max FROM $table$whereClause$groupClause$havingClause';
+    final result = await query(sql, whereValues: whereValues, debug: debug);
+    final rawValue = result.rows.first['_max'];
+    if (rawValue == null) return 0.0;
+    if (rawValue is num) return rawValue.toDouble();
+    return double.tryParse(rawValue.toString()) ?? 0.0;
   }
 
   ///```
@@ -396,25 +403,28 @@ class MysqlUtils {
   ///```
   Future<double> min({
     required String table,
-    String fields = '',
-    where = const {},
+    required String fields,
+    Map<String, dynamic> where = const {},
     String group = '',
     String having = '',
     bool debug = false,
   }) async {
-    if (group != '') group = 'GROUP BY $group';
-    if (having != '') having = 'HAVING $having';
-    if (fields == '') throw 'fields cant be empty';
-    List _whereAndValues = _whereParse(where);
-    table = _tableParse(table);
-
-    ResultFormat results = await query('SELECT MIN($fields) as _min FROM $table ${_whereAndValues.first} $group $having', whereValues: _whereAndValues.last, debug: debug);
-    var n = results.rows.first['_min'];
-    if (n is int) {
-      return n.toDouble();
-    } else {
-      return n;
+    if (fields.isEmpty) {
+      throw ArgumentError('fields cannot be empty');
     }
+
+    table = _tableParse(table);
+    final whereResult = _whereParse(where);
+    final whereClause = whereResult.first;
+    final whereValues = whereResult.last;
+    final groupClause = group.isNotEmpty ? ' GROUP BY $group' : '';
+    final havingClause = having.isNotEmpty ? ' HAVING $having' : '';
+    final sql = 'SELECT MIN($fields) AS _min FROM $table$whereClause$groupClause$havingClause';
+    final result = await query(sql, whereValues: whereValues, debug: debug);
+    final rawValue = result.rows.first['_min'];
+    if (rawValue == null) return 0.0;
+    if (rawValue is num) return rawValue.toDouble();
+    return double.tryParse(rawValue.toString()) ?? 0.0;
   }
 
   ///```
@@ -550,93 +560,72 @@ class MysqlUtils {
 
   ///where parsw
   List _whereParse(dynamic where) {
-    String _where = '';
-    List _values = [];
-    if (where is String && where != '') {
-      _where = 'WHERE $where';
+    String whereClause = '';
+    List values = [];
+
+    if (where is String && where.isNotEmpty) {
+      whereClause = 'WHERE $where';
     } else if (where is Map && where.isNotEmpty) {
-      var _keys = '';
+      List<String> conditions = [];
+
       where.forEach((key, value) {
         if (key == '_SQL') {
-          if (_keys == '') {
-            _keys = '${sqlEscapeString(value)}';
-          } else {
-            _keys += ' AND ${sqlEscapeString(value)}';
-          }
+          conditions.add(value.toString());
         } else if (value is String || value is num) {
-          if (value is String) {
-            if (_keys == '') {
-              _keys = '`$key` = (?)';
-              _values.add(value);
-            } else {
-              _keys += ' AND `$key`= (?)';
-              _values.add(value);
-            }
-          } else if (value is num) {
-            if (_keys == '') {
-              _keys = '`$key` = (?)';
-              _values.add(value);
-            } else {
-              _keys += ' AND `$key`= (?)';
-              _values.add(value);
-            }
-          }
-        } else if (value is List) {
-          switch (value[0]) {
+          conditions.add('`$key` = ?');
+          values.add(sqlEscapeString(value));
+        } else if (value is List && value.isNotEmpty) {
+          final op = value[0].toString().toLowerCase();
+          switch (op) {
             case 'in':
             case 'notin':
+              if (value.length < 2 || value[1] is! List) break;
+              final list = value[1] as List;
+              final placeholders = List.filled(list.length, '?').join(', ');
+              conditions.add('`$key` ${op == 'in' ? 'IN' : 'NOT IN'} ($placeholders)');
+              values.addAll(list.map(sqlEscapeString));
+              break;
+
             case 'between':
             case 'notbetween':
-            case 'like':
-            case 'notlike':
-              Map _ex = {
-                'in': 'IN',
-                'notin': 'NOT IN',
-                'between': 'BETWEEN',
-                'notbetween': 'NOT BETWEEN',
-                'like': 'LIKE',
-                'notlike': 'NOT LIKE',
-              };
-              String _wh = '';
-              if (value[0] == 'in' || value[0] == 'notin') {
-                _wh = '`$key` ${_ex[value[0]]}(${value[1].join(',')})';
-              }
-              if (value[0] == 'between' || value[0] == 'notbetween') {
-                _wh = '(`$key` ${_ex[value[0]]} ${value[1]} AND ${value[2]})';
-              }
-              if (value[0] == 'like' || value[0] == 'notlike') {
-                _wh = '(`$key` ${_ex[value[0]]} \'${sqlEscapeString(value[1])}\')';
-              }
-
-              if (_keys == '') {
-                _keys = _wh;
-              } else {
-                _keys += ' AND $_wh';
+              if (value.length == 3) {
+                conditions.add('`$key` ${op == 'between' ? 'BETWEEN' : 'NOT BETWEEN'} ? AND ?');
+                values.addAll([value[1], value[2]]);
+              } else if (value.length == 2 && value[1] is String) {
+                final parts = (value[1] as String).split(',');
+                if (parts.length == 2) {
+                  conditions.add('`$key` ${op == 'between' ? 'BETWEEN' : 'NOT BETWEEN'} ? AND ?');
+                  values.addAll(parts);
+                }
               }
               break;
+
+            case 'like':
+            case 'notlike':
+              conditions.add('`$key` ${op == 'like' ? 'LIKE' : 'NOT LIKE'} ?');
+              values.add(sqlEscapeString(value[1]));
+              break;
+
             case '>':
             case '<':
             case '=':
             case '<>':
             case '!=':
-              //>,=,<,<>,!=
-              var val = value[1];
-              if (value[1] is String) {
-                val = '\'${value[1]}\'';
-              }
-              String _wh = '(`$key` ${value[0]} $val)';
-              if (_keys == '') {
-                _keys = _wh;
-              } else {
-                _keys += ' AND $_wh';
+              if (value.length >= 2) {
+                conditions.add('`$key` ${op} ?');
+                values.add(value[1]);
               }
               break;
           }
         }
       });
-      _where = 'WHERE $_keys';
+
+      if (conditions.isNotEmpty) {
+        whereClause = 'WHERE ' + conditions.join(' AND ');
+      }
     }
-    return [_where, _values];
+
+    return [whereClause, values];
   }
 
   ///errorRack
@@ -658,16 +647,16 @@ class MysqlUtils {
   ///query
   Future<ResultFormat> query(
     String sql, {
-    Map<String, dynamic> values = const {},
+    // Map<String, dynamic> values = const {},
     List whereValues = const [],
     debug = false,
   }) async {
-    if (sql.startsWith('SELECT')) {
-      print(sql);
-      print(whereValues);
-    }
+    // if (sql.startsWith('UPDATE')) {
+    print(sql);
+    print(whereValues);
+    // }
 
-    var queryStr = '$sql  $values';
+    var queryStr = '$sql $whereValues';
     queryTimes++;
     if (debug || _settings.debug) _sqlLog(queryStr);
     // bool transaction = false;
@@ -676,7 +665,8 @@ class MysqlUtils {
     // }
     try {
       IResultSet res;
-      if (sql.toUpperCase().startsWith('SELECT')) {
+
+      if (sql.toUpperCase().startsWith('SELECT') || sql.toUpperCase().startsWith('UPDATE') || sql.toUpperCase().startsWith('DELETE') || sql.toUpperCase().startsWith('INSERT') || sql.toUpperCase().startsWith('REPLACE')) {
         PreparedStmt stmt;
         if (_settings.pool) {
           stmt = await (await poolConn).prepare(sql);
@@ -686,9 +676,9 @@ class MysqlUtils {
         res = await stmt.execute(whereValues);
       } else {
         if (_settings.pool) {
-          res = await (await poolConn).execute(sql, values);
+          res = await (await poolConn).execute(sql, const {});
         } else {
-          res = await (await singleConn).execute(sql, values);
+          res = await (await singleConn).execute(sql, const {});
         }
       }
       ResultFormat _res = ResultFormat.from(res);
@@ -738,15 +728,11 @@ class MysqlUtils {
   }
 
   /// escape sql string
-  String sqlEscapeString(String sqlString) {
-    if (!sqlEscape) {
-      return sqlString;
+  dynamic sqlEscapeString(dynamic input) {
+    if (input is String) {
+      return input.replaceAll('\'', '\\\'');
     }
-    if (sqlString == '') {
-      return '';
-    }
-    sqlString = sqlString.replaceAll('\'', '\\\'');
-    return sqlString;
+    return input;
   }
 }
 

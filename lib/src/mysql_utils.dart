@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:mysql_client_plus/mysql_client_plus.dart';
 import 'package:mysql_utils/mysql_utils.dart';
 
@@ -54,8 +55,7 @@ class MysqlUtils {
   }
 
   ///create single connection
-  Future<MySQLConnection> createConnectionSingle(
-      MysqlUtilsSettings settings) async {
+  Future<MySQLConnection> createConnectionSingle(MysqlUtilsSettings settings) async {
     final conn = await MySQLConnection.createConnection(
       host: settings.host,
       port: settings.port,
@@ -72,8 +72,7 @@ class MysqlUtils {
   }
 
   ///create pool connection
-  Future<MySQLConnectionPool> createConnectionPool(
-      MysqlUtilsSettings settings) async {
+  Future<MySQLConnectionPool> createConnectionPool(MysqlUtilsSettings settings) async {
     return MySQLConnectionPool(
       host: settings.host,
       port: settings.port,
@@ -92,8 +91,7 @@ class MysqlUtils {
   ///isConnectionAlive
   Future<bool> isConnectionAlive() async {
     try {
-      await query('select 1').timeout(Duration(milliseconds: 500),
-          onTimeout: () {
+      await query('select 1').timeout(Duration(milliseconds: 500), onTimeout: () {
         throw TimeoutException('test isConnectionAlive timeout.');
       });
       return true;
@@ -146,9 +144,8 @@ class MysqlUtils {
     bool debug = false,
   }) async {
     table = _tableParse(table);
-    String _where = _whereParse(where);
-    ResultFormat results =
-        await query('DELETE FROM $table $_where ', debug: debug);
+    List _whereAndValues = _whereParse(where);
+    ResultFormat results = await query('DELETE FROM $table ${_whereAndValues.first} ', debug: debug, whereValues: _whereAndValues.last);
     return results.affectedRows;
   }
 
@@ -172,8 +169,7 @@ class MysqlUtils {
     bool debug = false,
   }) async {
     table = _tableParse(table);
-    String _where = _whereParse(where);
-
+    List _whereAndValues = _whereParse(where);
     if (updateData.isEmpty) {
       throw ('updateData.length!=0');
     }
@@ -184,10 +180,11 @@ class MysqlUtils {
     });
 
     String _setValue = _setkeys.join(',');
-    String _sql = 'UPDATE $table SET $_setValue $_where';
+    String _sql = 'UPDATE $table SET $_setValue ${_whereAndValues.first}';
     ResultFormat results = await query(
       _sql,
       values: updateData,
+      whereValues: _whereAndValues.last,
       debug: debug,
     );
     return results.affectedRows;
@@ -246,8 +243,7 @@ class MysqlUtils {
     });
     String _fieldsString = _fields.join(',');
     String _valuesString = _values.join(',');
-    String _sql =
-        '${replace ? 'REPLACE' : 'INSERT'} INTO $table ($_fieldsString) VALUES $_valuesString';
+    String _sql = '${replace ? 'REPLACE' : 'INSERT'} INTO $table ($_fieldsString) VALUES $_valuesString';
     ResultFormat result = await query(_sql, debug: debug);
     return result.affectedRows;
   }
@@ -285,8 +281,7 @@ class MysqlUtils {
     });
     String _fieldsString = _fields.join(',');
     String _valuesString = _values.join(',');
-    String _sql =
-        '${replace ? 'REPLACE' : 'INSERT'} INTO $table ($_fieldsString) VALUES ($_valuesString)';
+    String _sql = '${replace ? 'REPLACE' : 'INSERT'} INTO $table ($_fieldsString) VALUES ($_valuesString)';
     ResultFormat result = await query(_sql, values: insertData, debug: debug);
     return result.lastInsertID;
   }
@@ -314,12 +309,10 @@ class MysqlUtils {
     if (group != '') group = 'GROUP BY $group';
     if (having != '') having = 'HAVING $having';
 
-    String _where = _whereParse(where);
+    List _whereAndValues = _whereParse(where);
     table = _tableParse(table);
 
-    ResultFormat results = await query(
-        'SELECT count($fields) as _count FROM $table $_where $group $having',
-        debug: debug);
+    ResultFormat results = await query('SELECT count($fields) as _count FROM $table ${_whereAndValues.first} $group $having', whereValues: _whereAndValues.last, debug: debug);
     return results.rows.first['_count'];
   }
 
@@ -347,12 +340,10 @@ class MysqlUtils {
     if (having != '') having = 'HAVING $having';
     if (fields == '') throw 'fields cant be empty';
 
-    String _where = _whereParse(where);
+    List _whereAndValues = _whereParse(where);
     table = _tableParse(table);
 
-    ResultFormat results = await query(
-        'SELECT AVG($fields) as _avg FROM $table $_where $group $having',
-        debug: debug);
+    ResultFormat results = await query('SELECT AVG($fields) as _avg FROM $table ${_whereAndValues.first} $group $having', whereValues: _whereAndValues.last, debug: debug);
     return double.parse(results.rows.first['_avg'] ?? '0');
   }
 
@@ -379,13 +370,10 @@ class MysqlUtils {
     if (group != '') group = 'GROUP BY $group';
     if (having != '') having = 'HAVING $having';
     if (fields == '') throw 'fields cant be empty';
-
-    String _where = _whereParse(where);
+    List _whereAndValues = _whereParse(where);
     table = _tableParse(table);
 
-    ResultFormat results = await query(
-        'SELECT max($fields) as _max FROM $table $_where $group $having',
-        debug: debug);
+    ResultFormat results = await query('SELECT max($fields) as _max FROM $table ${_whereAndValues.first} $group $having', whereValues: _whereAndValues.last, debug: debug);
     var n = results.rows.first['_max'];
     if (n is int) {
       return n.toDouble();
@@ -417,12 +405,10 @@ class MysqlUtils {
     if (group != '') group = 'GROUP BY $group';
     if (having != '') having = 'HAVING $having';
     if (fields == '') throw 'fields cant be empty';
-    String _where = _whereParse(where);
+    List _whereAndValues = _whereParse(where);
     table = _tableParse(table);
 
-    ResultFormat results = await query(
-        'SELECT MIN($fields) as _min FROM $table $_where $group $having',
-        debug: debug);
+    ResultFormat results = await query('SELECT MIN($fields) as _min FROM $table ${_whereAndValues.first} $group $having', whereValues: _whereAndValues.last, debug: debug);
     var n = results.rows.first['_min'];
     if (n is int) {
       return n.toDouble();
@@ -465,14 +451,13 @@ class MysqlUtils {
     if (having != '') having = 'HAVING $having';
     if (order != '') order = 'ORDER BY $order';
 
-    String _where = _whereParse(where);
+    List _whereAndValues = _whereParse(where);
     table = _tableParse(table);
     limit = _limitParse(limit);
 
-    String _sql =
-        'SELECT $fields FROM $table $_where $group $having $order $limit';
+    String _sql = 'SELECT $fields FROM $table ${_whereAndValues.first} $group $having $order $limit';
 
-    ResultFormat results = await query(_sql, debug: debug);
+    ResultFormat results = await query(_sql, debug: debug, whereValues: _whereAndValues.last);
 
     if (results.numOfRows > 0) {
       return results.rows;
@@ -564,8 +549,9 @@ class MysqlUtils {
   }
 
   ///where parsw
-  String _whereParse(dynamic where) {
+  List _whereParse(dynamic where) {
     String _where = '';
+    List _values = [];
     if (where is String && where != '') {
       _where = 'WHERE $where';
     } else if (where is Map && where.isNotEmpty) {
@@ -580,15 +566,19 @@ class MysqlUtils {
         } else if (value is String || value is num) {
           if (value is String) {
             if (_keys == '') {
-              _keys = '`$key` = \'${sqlEscapeString(value)}\'';
+              _keys = '`$key` = (?)';
+              _values.add(value);
             } else {
-              _keys += ' AND `$key`= \'${sqlEscapeString(value)}\'';
+              _keys += ' AND `$key`= (?)';
+              _values.add(value);
             }
           } else if (value is num) {
             if (_keys == '') {
-              _keys = '(`$key` = $value)';
+              _keys = '`$key` = (?)';
+              _values.add(value);
             } else {
-              _keys += ' AND (`$key` = $value)';
+              _keys += ' AND `$key`= (?)';
+              _values.add(value);
             }
           }
         } else if (value is List) {
@@ -615,8 +605,7 @@ class MysqlUtils {
                 _wh = '(`$key` ${_ex[value[0]]} ${value[1]} AND ${value[2]})';
               }
               if (value[0] == 'like' || value[0] == 'notlike') {
-                _wh =
-                    '(`$key` ${_ex[value[0]]} \'${sqlEscapeString(value[1])}\')';
+                _wh = '(`$key` ${_ex[value[0]]} \'${sqlEscapeString(value[1])}\')';
               }
 
               if (_keys == '') {
@@ -647,7 +636,7 @@ class MysqlUtils {
       });
       _where = 'WHERE $_keys';
     }
-    return _where;
+    return [_where, _values];
   }
 
   ///errorRack
@@ -670,23 +659,31 @@ class MysqlUtils {
   Future<ResultFormat> query(
     String sql, {
     Map<String, dynamic> values = const {},
+    List whereValues = const [],
     debug = false,
   }) async {
+    if (sql.startsWith('SELECT')) {
+      print(sql);
+      print(whereValues);
+    }
+
     var queryStr = '$sql  $values';
     queryTimes++;
     if (debug || _settings.debug) _sqlLog(queryStr);
-    bool transaction = false;
-    if (sql == 'start transaction' || sql == 'commit' || sql == 'rollback') {
-      transaction = true;
-    }
+    // bool transaction = false;
+    // if (sql == 'start transaction' || sql == 'commit' || sql == 'rollback') {
+    //   transaction = true;
+    // }
     try {
       IResultSet res;
-      if (transaction) {
+      if (sql.toUpperCase().startsWith('SELECT')) {
+        PreparedStmt stmt;
         if (_settings.pool) {
-          res = await (await poolConn).execute(sql, {});
+          stmt = await (await poolConn).prepare(sql);
         } else {
-          res = await (await singleConn).execute(sql, {});
+          stmt = await (await singleConn).prepare(sql);
         }
+        res = await stmt.execute(whereValues);
       } else {
         if (_settings.pool) {
           res = await (await poolConn).execute(sql, values);
@@ -694,7 +691,6 @@ class MysqlUtils {
           res = await (await singleConn).execute(sql, values);
         }
       }
-
       ResultFormat _res = ResultFormat.from(res);
       return _res;
     } catch (e) {
@@ -705,8 +701,7 @@ class MysqlUtils {
   }
 
   ///query multi
-  Future<List<int>> queryMulti(String sql, Iterable<List<Object?>> values,
-      {debug = false}) async {
+  Future<List<int>> queryMulti(String sql, Iterable<List<Object?>> values, {debug = false}) async {
     var queryStr = '$sql  $values';
     queryTimes++;
     if (debug || _settings.debug) _sqlLog(queryStr);

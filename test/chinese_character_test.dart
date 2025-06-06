@@ -52,8 +52,8 @@ void main() {
     Map<String, dynamic> data = {
       'string_column': '一大\'串中文',
     };
-    // var req1 = await db.insert(table: 'test_data2', insertData: data);
-    // expect(req1, BigInt.one);
+    var req1 = await db.insert(table: 'test_data2', insertData: data);
+    expect(req1, BigInt.one);
     Map<String, dynamic> data2 = {
       'string_column': 'mysql 测试',
     };
@@ -100,11 +100,13 @@ void main() {
     var reqEq0 = await db.getOne(table: 'test_data2', where: {
       'string_column': ['=', '一大\'串中文']
     });
+    print('reqEq0: $reqEq0');
     expect(reqEq0['id'], 1);
     //
     var reqEq1 = await db.getOne(table: 'test_data2', where: {'string_column': '一大\'串中文'});
     expect(reqEq1['id'], 1);
-    //
+    print('reqEq1: $reqEq1');
+    // //
     var reqEq2 = await db.getOne(table: 'test_data2', where: {'string_column': '一大\'串中文'});
     expect(reqEq2['string_column'], '一大\'串中文');
     //

@@ -573,7 +573,7 @@ class MysqlUtils {
           conditions.add(value.toString());
         } else if (value is String || value is num) {
           conditions.add('`$key` = ?');
-          values.add(sqlEscapeString(value));
+          values.add(value);
         } else if (value is List && value.isNotEmpty) {
           final op = value[0].toString().toLowerCase();
           switch (op) {

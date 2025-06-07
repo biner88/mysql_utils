@@ -159,6 +159,16 @@ void main() {
     expect(req1, 1003);
   });
 
+  test('Execute: max ', () async {
+    // var row = await db.query('select id from test_data2 where id=? or string_column like ?', whereValues: [1, '%串%'], isStmt: true);
+    var req1 = await db.query("select id from test_data where id>0");
+    for (final row in req1.rowsAssoc) {
+      expect(row.colAt(0), '1');
+      expect(row.colByName("id"), '1');
+      expect(row.assoc()['id'], '1');
+      break;
+    }
+  });
   test('Execute: transaction', () async {
     await db.startTrans();
     var req1 = await db.delete(
@@ -183,5 +193,10 @@ void main() {
 
   test('Execute: drop table ', () async {
     await db.query("DROP TABLE IF EXISTS `test_data`");
+  });
+
+  test('Execute: isAlive ', () async {
+    bool isAlive = await db.isConnectionAlive();
+    expect(isAlive, true);
   });
 }

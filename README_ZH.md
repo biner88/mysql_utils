@@ -71,11 +71,8 @@ mysql_client 已放弃维护，现在由本库作者继续维护，新库是 [my
 原生查询
 
 ```dart
-var row = await db
-    .query('select id from Product where id=:id or description like :description',{
-      'id':1,
-      'description':'%ce%'
-    });
+//var row = await db.query('select id from test_data2 where id=? or string_column like ?', whereValues: [1, '%串%'], isStmt: true);
+var row = await db.query("select id from test_data2 where id=1 or string_column like '%串%'");
 print(row.toMap());
 //// print(row.rowsAssoc.first.assoc());
 // for (var item in row.rowsAssoc) {

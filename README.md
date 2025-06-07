@@ -80,14 +80,12 @@ Use the singleton mode, and call `close()` after use to close the database conne
 
 #### query
 
-Native query, note that the usage here is different from version 1.0, 2.0 inherits the method of mysql_client
+Native query
 
 ```dart
-var row = await db
-    .query('select id from Product where id=:id or description like :description',{
-      'id':1,
-      'description':'%ce%'
-    });
+//var row = await db.query('select id from test_data2 where id=? or string_column like ?', whereValues: [1, '%串%'], isStmt: true);
+var row = await db.query("select id from test_data2 where id=1 or string_column like '%mysql%'");
+print(row.toMap());
 print(row.toMap());
 //// print(row.rowsAssoc.first.assoc());
 // for (var item in row.rowsAssoc) {

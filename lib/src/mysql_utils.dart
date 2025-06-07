@@ -144,7 +144,7 @@ class MysqlUtils {
   }) async {
     table = _tableParse(table);
     List _whereAndValues = _whereParse(where);
-    ResultFormat results = await query('DELETE FROM $table ${_whereAndValues.first} ', debug: debug, whereValues: _whereAndValues.last);
+    ResultFormat results = await query('DELETE FROM $table ${_whereAndValues.first} ', debug: debug, whereValues: _whereAndValues.last, isStmt: true);
     return results.affectedRows;
   }
 
@@ -183,11 +183,7 @@ class MysqlUtils {
 
     String _setValue = _setkeys.join(',');
     String _sql = 'UPDATE $table SET $_setValue ${_whereAndValues.first}';
-    ResultFormat results = await query(
-      _sql,
-      whereValues: values,
-      debug: debug,
-    );
+    ResultFormat results = await query(_sql, whereValues: values, debug: debug, isStmt: true);
     return results.affectedRows;
   }
 
@@ -240,7 +236,7 @@ class MysqlUtils {
 
     final sql = '${replace ? 'REPLACE' : 'INSERT'} INTO $table ($fieldsString) VALUES $valuesPlaceholder';
 
-    final result = await query(sql, whereValues: values, debug: debug);
+    final result = await query(sql, whereValues: values, debug: debug, isStmt: true);
     return result.affectedRows;
   }
 
@@ -275,7 +271,7 @@ class MysqlUtils {
     final sql = '${replace ? 'REPLACE' : 'INSERT'} INTO $table '
         '(${fields.join(',')}) VALUES (${placeholders.join(',')})';
 
-    final result = await query(sql, whereValues: values, debug: debug);
+    final result = await query(sql, whereValues: values, debug: debug, isStmt: true);
     return result.lastInsertID;
   }
 
@@ -299,18 +295,8 @@ class MysqlUtils {
     String having = '',
     bool debug = false,
   }) async {
-    table = _tableParse(table);
-    final whereResult = _whereParse(where);
-    final whereClause = whereResult.first;
-    final whereValues = whereResult.last;
-    final groupClause = group.isNotEmpty ? ' GROUP BY $group' : '';
-    final havingClause = having.isNotEmpty ? ' HAVING $having' : '';
-    final sql = 'SELECT COUNT($fields) AS _count FROM $table $whereClause$groupClause$havingClause';
-    final result = await query(sql, whereValues: whereValues, debug: debug);
-    if (result.rows.isEmpty || result.rows.first['_count'] == null) {
-      return 0;
-    }
-    return (result.rows.first['_count'] as num).toInt();
+    double res = await _keyMaxMinAvgCount(table: table, fields: fields, where: where, group: group, having: having, debug: debug, sqlKey: 'COUNT', sqlValue: '_count');
+    return res.toInt();
   }
 
   ///```
@@ -333,22 +319,7 @@ class MysqlUtils {
     String having = '',
     bool debug = false,
   }) async {
-    if (fields.isEmpty) {
-      throw ArgumentError('fields cannot be empty');
-    }
-
-    table = _tableParse(table);
-    final whereResult = _whereParse(where);
-    final whereClause = whereResult.first;
-    final whereValues = whereResult.last;
-    final groupClause = group.isNotEmpty ? ' GROUP BY $group' : '';
-    final havingClause = having.isNotEmpty ? ' HAVING $having' : '';
-    final sql = 'SELECT AVG($fields) AS _avg FROM $table$whereClause$groupClause$havingClause';
-    final result = await query(sql, whereValues: whereValues, debug: debug);
-    final rawValue = result.rows.first['_avg'];
-    if (rawValue == null) return 0.0;
-    if (rawValue is num) return rawValue.toDouble();
-    return double.tryParse(rawValue.toString()) ?? 0.0;
+    return _keyMaxMinAvgCount(table: table, fields: fields, where: where, group: group, having: having, debug: debug, sqlKey: 'AVG', sqlValue: '_avg');
   }
 
   ///```
@@ -371,22 +342,7 @@ class MysqlUtils {
     String having = '',
     bool debug = false,
   }) async {
-    if (fields.isEmpty) {
-      throw ArgumentError('fields cannot be empty');
-    }
-
-    table = _tableParse(table);
-    final whereResult = _whereParse(where);
-    final whereClause = whereResult.first;
-    final whereValues = whereResult.last;
-    final groupClause = group.isNotEmpty ? ' GROUP BY $group' : '';
-    final havingClause = having.isNotEmpty ? ' HAVING $having' : '';
-    final sql = 'SELECT MAX($fields) AS _max FROM $table$whereClause$groupClause$havingClause';
-    final result = await query(sql, whereValues: whereValues, debug: debug);
-    final rawValue = result.rows.first['_max'];
-    if (rawValue == null) return 0.0;
-    if (rawValue is num) return rawValue.toDouble();
-    return double.tryParse(rawValue.toString()) ?? 0.0;
+    return _keyMaxMinAvgCount(table: table, fields: fields, where: where, group: group, having: having, debug: debug, sqlKey: 'MAX', sqlValue: '_max');
   }
 
   ///```
@@ -409,6 +365,19 @@ class MysqlUtils {
     String having = '',
     bool debug = false,
   }) async {
+    return _keyMaxMinAvgCount(table: table, fields: fields, where: where, group: group, having: having, debug: debug, sqlKey: 'MIN', sqlValue: '_min');
+  }
+
+  Future<double> _keyMaxMinAvgCount({
+    required String table,
+    required String fields,
+    required String sqlKey,
+    required String sqlValue,
+    Map<String, dynamic> where = const {},
+    String group = '',
+    String having = '',
+    bool debug = false,
+  }) async {
     if (fields.isEmpty) {
       throw ArgumentError('fields cannot be empty');
     }
@@ -419,9 +388,9 @@ class MysqlUtils {
     final whereValues = whereResult.last;
     final groupClause = group.isNotEmpty ? ' GROUP BY $group' : '';
     final havingClause = having.isNotEmpty ? ' HAVING $having' : '';
-    final sql = 'SELECT MIN($fields) AS _min FROM $table$whereClause$groupClause$havingClause';
-    final result = await query(sql, whereValues: whereValues, debug: debug);
-    final rawValue = result.rows.first['_min'];
+    final sql = 'SELECT $sqlKey($fields) AS $sqlValue FROM $table$whereClause$groupClause$havingClause';
+    final result = await query(sql, whereValues: whereValues, debug: debug, isStmt: true);
+    final rawValue = result.rows.first[sqlValue];
     if (rawValue == null) return 0.0;
     if (rawValue is num) return rawValue.toDouble();
     return double.tryParse(rawValue.toString()) ?? 0.0;
@@ -438,7 +407,7 @@ class MysqlUtils {
   ///   debug: false,
   ///   where: {
   ///     'email': 'xxx@google.com',
-  ///     'id': ['between', '1,4'],
+  ///     'id': ['between', , 1, 4],
   ///     'email2': ['=', 'sss@google.com'],
   ///     'news_title': ['like', '%name%'],
   ///     'user_id': ['>', 1],
@@ -467,7 +436,7 @@ class MysqlUtils {
 
     String _sql = 'SELECT $fields FROM $table ${_whereAndValues.first} $group $having $order $limit';
 
-    ResultFormat results = await query(_sql, debug: debug, whereValues: _whereAndValues.last);
+    ResultFormat results = await query(_sql, debug: debug, whereValues: _whereAndValues.last, isStmt: true);
 
     if (results.numOfRows > 0) {
       return results.rows;
@@ -486,7 +455,7 @@ class MysqlUtils {
   ///   debug: false,
   ///   where: {
   ///     'email': 'xxx@google.com',
-  ///     'id': ['between', '1,4'],
+  ///     'id': ['between', , 1, 4],
   ///     'email2': ['=', 'sss@google.com'],
   ///     'news_title': ['like', '%name%'],
   ///     'user_id': ['>', 1],
@@ -647,52 +616,54 @@ class MysqlUtils {
   ///query
   Future<ResultFormat> query(
     String sql, {
-    // Map<String, dynamic> values = const {},
     List whereValues = const [],
     debug = false,
+    bool isStmt = false,
   }) async {
-    // if (sql.startsWith('UPDATE')) {
-    print(sql);
-    print(whereValues);
-    // }
-
-    var queryStr = '$sql $whereValues';
-    queryTimes++;
-    if (debug || _settings.debug) _sqlLog(queryStr);
-    // bool transaction = false;
-    // if (sql == 'start transaction' || sql == 'commit' || sql == 'rollback') {
-    //   transaction = true;
-    // }
-    try {
-      IResultSet res;
-
-      if (sql.toUpperCase().startsWith('SELECT') || sql.toUpperCase().startsWith('UPDATE') || sql.toUpperCase().startsWith('DELETE') || sql.toUpperCase().startsWith('INSERT') || sql.toUpperCase().startsWith('REPLACE')) {
-        PreparedStmt stmt;
-        if (_settings.pool) {
-          stmt = await (await poolConn).prepare(sql);
-        } else {
-          stmt = await (await singleConn).prepare(sql);
-        }
-        res = await stmt.execute(whereValues);
-      } else {
-        if (_settings.pool) {
-          res = await (await poolConn).execute(sql, const {});
-        } else {
-          res = await (await singleConn).execute(sql, const {});
-        }
+    // Validate input
+    if (sql.trim().isEmpty) {
+      throw ArgumentError('SQL query cannot be empty');
+    }
+    // Debug logging
+    if (debug || _settings.debug) {
+      _sqlLog('Query: $sql');
+      if (whereValues.isNotEmpty) {
+        _sqlLog('Parameters: $whereValues');
       }
-      ResultFormat _res = ResultFormat.from(res);
-      return _res;
-    } catch (e) {
-      _errorLog(e.toString());
-      errorRollback();
+    }
+    try {
+      final connection = _settings.pool ? await poolConn : await singleConn;
+      final isPool = _settings.pool;
+      late IResultSet resultSet;
+      if (isStmt) {
+        final stmt = isPool ? await (connection as MySQLConnectionPool).prepare(sql) : await (connection as MySQLConnection).prepare(sql);
+        try {
+          resultSet = await stmt.execute(whereValues);
+        } finally {
+          await stmt.deallocate();
+        }
+      } else {
+        resultSet = isPool ? await (connection as MySQLConnectionPool).execute(sql) : await (connection as MySQLConnection).execute(sql);
+      }
+      return ResultFormat.from(resultSet);
+    } catch (e, stackTrace) {
+      // Enhanced error handling
+      final errorMsg = 'Query failed: $sql\nError: $e\nStack trace: $stackTrace';
+      _errorLog(errorMsg);
+
+      // Attempt to rollback if in transaction
+      try {
+        await errorRollback();
+      } catch (rollbackError) {
+        _errorLog('Rollback failed: $rollbackError');
+      }
       return ResultFormat.empty();
     }
   }
 
   ///query multi
   Future<List<int>> queryMulti(String sql, Iterable<List<Object?>> values, {debug = false}) async {
-    var queryStr = '$sql  $values';
+    var queryStr = '$sql $values';
     queryTimes++;
     if (debug || _settings.debug) _sqlLog(queryStr);
     PreparedStmt stmt;

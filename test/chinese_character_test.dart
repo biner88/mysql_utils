@@ -62,8 +62,8 @@ void main() {
   });
 
   test('Execute: getOne Where', () async {
-    // var reqEq = await db.getOne(table: 'test_data2', where: {'string_column': "一大\'串中文", 'id': 1});
-    // expect(reqEq['id'], 1);
+    var reqEq = await db.getOne(table: 'test_data2', where: {'string_column': "一大\'串中文", 'id': 1});
+    expect(reqEq['id'], 1);
     //
     var reqIn = await db.getOne(table: 'test_data2', where: {
       'id': [
@@ -100,13 +100,11 @@ void main() {
     var reqEq0 = await db.getOne(table: 'test_data2', where: {
       'string_column': ['=', '一大\'串中文']
     });
-    print('reqEq0: $reqEq0');
     expect(reqEq0['id'], 1);
     //
     var reqEq1 = await db.getOne(table: 'test_data2', where: {'string_column': '一大\'串中文'});
     expect(reqEq1['id'], 1);
-    print('reqEq1: $reqEq1');
-    // //
+    //
     var reqEq2 = await db.getOne(table: 'test_data2', where: {'string_column': '一大\'串中文'});
     expect(reqEq2['string_column'], '一大\'串中文');
     //

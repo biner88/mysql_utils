@@ -1,3 +1,8 @@
+## [2.1.8]
+
+* Add action test
+* Fix the encoding problem of querying Chinese
+
 ## [2.1.7]
 
 * Updated mysql_client_plus to version ^0.0.32
@@ -109,7 +114,7 @@
 ## [1.0.3]
 
 * Fix Bug [#3](https://github.com/biner88/mysql_utils/issues/3)
-* Add Where `in`,                                                                                                                 `between`,  `notbetween` and demo.
+* Add Where `in`,                                                                                                                        `between`,  `notbetween` and demo.
 
 ## [1.0.2]
 

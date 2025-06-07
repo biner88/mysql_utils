@@ -56,7 +56,8 @@ void main() {
     final row = result.rows.first;
     final uuid = binaryToUuid(row['id']);
 
-    final result2 = await db.query("SELECT BIN_TO_UUID(id) as UUID FROM test_data3");
+    final result2 =
+        await db.query("SELECT BIN_TO_UUID(id) as UUID FROM test_data3");
     final row2 = result2.rows.first;
 
     expect(uuid, row2['UUID']);

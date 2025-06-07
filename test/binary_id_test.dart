@@ -10,9 +10,9 @@ void main() {
       settings: MysqlUtilsSettings(
         host: '127.0.0.1',
         port: 3306,
-        user: 'your_user',
-        password: 'your_password',
-        db: 'testdb',
+        user: 'root',
+        password: 'root',
+        db: 'test_db',
         secure: true,
         // prefix: '',
         // maxConnections: 1000,

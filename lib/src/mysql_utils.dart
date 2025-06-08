@@ -54,8 +54,7 @@ class MysqlUtils {
   }
 
   ///create single connection
-  Future<MySQLConnection> createConnectionSingle(
-      MysqlUtilsSettings settings) async {
+  Future<MySQLConnection> createConnectionSingle(MysqlUtilsSettings settings) async {
     final conn = await MySQLConnection.createConnection(
       host: settings.host,
       port: settings.port,
@@ -72,8 +71,7 @@ class MysqlUtils {
   }
 
   ///create pool connection
-  Future<MySQLConnectionPool> createConnectionPool(
-      MysqlUtilsSettings settings) async {
+  Future<MySQLConnectionPool> createConnectionPool(MysqlUtilsSettings settings) async {
     return MySQLConnectionPool(
       host: settings.host,
       port: settings.port,
@@ -92,8 +90,7 @@ class MysqlUtils {
   ///isConnectionAlive
   Future<bool> isConnectionAlive() async {
     try {
-      await query('select 1').timeout(Duration(milliseconds: 500),
-          onTimeout: () {
+      await query('select 1').timeout(Duration(milliseconds: 500), onTimeout: () {
         throw TimeoutException('test isConnectionAlive timeout.');
       });
       return true;
@@ -147,11 +144,7 @@ class MysqlUtils {
   }) async {
     table = _tableParse(table);
     List _whereAndValues = _whereParse(where);
-    ResultFormat results = await query(
-        'DELETE FROM $table ${_whereAndValues.first} ',
-        debug: debug,
-        whereValues: _whereAndValues.last,
-        isStmt: true);
+    ResultFormat results = await query('DELETE FROM $table ${_whereAndValues.first} ', debug: debug, whereValues: _whereAndValues.last, isStmt: true);
     return results.affectedRows;
   }
 
@@ -190,8 +183,7 @@ class MysqlUtils {
 
     String _setValue = _setkeys.join(',');
     String _sql = 'UPDATE $table SET $_setValue ${_whereAndValues.first}';
-    ResultFormat results =
-        await query(_sql, whereValues: values, debug: debug, isStmt: true);
+    ResultFormat results = await query(_sql, whereValues: values, debug: debug, isStmt: true);
     return results.affectedRows;
   }
 
@@ -233,8 +225,7 @@ class MysqlUtils {
     final placeholders = List.filled(fields.length, '?').join(',');
     final fieldsString = fields.map((k) => '`$k`').join(',');
 
-    final valuesPlaceholder =
-        List.filled(insertData.length, '($placeholders)').join(',');
+    final valuesPlaceholder = List.filled(insertData.length, '($placeholders)').join(',');
 
     final values = <dynamic>[];
     for (final row in insertData) {
@@ -243,11 +234,9 @@ class MysqlUtils {
       }
     }
 
-    final sql =
-        '${replace ? 'REPLACE' : 'INSERT'} INTO $table ($fieldsString) VALUES $valuesPlaceholder';
+    final sql = '${replace ? 'REPLACE' : 'INSERT'} INTO $table ($fieldsString) VALUES $valuesPlaceholder';
 
-    final result =
-        await query(sql, whereValues: values, debug: debug, isStmt: true);
+    final result = await query(sql, whereValues: values, debug: debug, isStmt: true);
     return result.affectedRows;
   }
 
@@ -282,8 +271,7 @@ class MysqlUtils {
     final sql = '${replace ? 'REPLACE' : 'INSERT'} INTO $table '
         '(${fields.join(',')}) VALUES (${placeholders.join(',')})';
 
-    final result =
-        await query(sql, whereValues: values, debug: debug, isStmt: true);
+    final result = await query(sql, whereValues: values, debug: debug, isStmt: true);
     return result.lastInsertID;
   }
 
@@ -307,15 +295,7 @@ class MysqlUtils {
     String having = '',
     bool debug = false,
   }) async {
-    double res = await _keyMaxMinAvgCount(
-        table: table,
-        fields: fields,
-        where: where,
-        group: group,
-        having: having,
-        debug: debug,
-        sqlKey: 'COUNT',
-        sqlValue: '_count');
+    double res = await _keyMaxMinAvgCount(table: table, fields: fields, where: where, group: group, having: having, debug: debug, sqlKey: 'COUNT', sqlValue: '_count');
     return res.toInt();
   }
 
@@ -339,15 +319,7 @@ class MysqlUtils {
     String having = '',
     bool debug = false,
   }) async {
-    return _keyMaxMinAvgCount(
-        table: table,
-        fields: fields,
-        where: where,
-        group: group,
-        having: having,
-        debug: debug,
-        sqlKey: 'AVG',
-        sqlValue: '_avg');
+    return _keyMaxMinAvgCount(table: table, fields: fields, where: where, group: group, having: having, debug: debug, sqlKey: 'AVG', sqlValue: '_avg');
   }
 
   ///```
@@ -370,15 +342,7 @@ class MysqlUtils {
     String having = '',
     bool debug = false,
   }) async {
-    return _keyMaxMinAvgCount(
-        table: table,
-        fields: fields,
-        where: where,
-        group: group,
-        having: having,
-        debug: debug,
-        sqlKey: 'MAX',
-        sqlValue: '_max');
+    return _keyMaxMinAvgCount(table: table, fields: fields, where: where, group: group, having: having, debug: debug, sqlKey: 'MAX', sqlValue: '_max');
   }
 
   ///```
@@ -401,15 +365,7 @@ class MysqlUtils {
     String having = '',
     bool debug = false,
   }) async {
-    return _keyMaxMinAvgCount(
-        table: table,
-        fields: fields,
-        where: where,
-        group: group,
-        having: having,
-        debug: debug,
-        sqlKey: 'MIN',
-        sqlValue: '_min');
+    return _keyMaxMinAvgCount(table: table, fields: fields, where: where, group: group, having: having, debug: debug, sqlKey: 'MIN', sqlValue: '_min');
   }
 
   Future<double> _keyMaxMinAvgCount({
@@ -432,10 +388,8 @@ class MysqlUtils {
     final whereValues = whereResult.last;
     final groupClause = group.isNotEmpty ? ' GROUP BY $group' : '';
     final havingClause = having.isNotEmpty ? ' HAVING $having' : '';
-    final sql =
-        'SELECT $sqlKey($fields) AS $sqlValue FROM $table$whereClause$groupClause$havingClause';
-    final result =
-        await query(sql, whereValues: whereValues, debug: debug, isStmt: true);
+    final sql = 'SELECT $sqlKey($fields) AS $sqlValue FROM $table$whereClause$groupClause$havingClause';
+    final result = await query(sql, whereValues: whereValues, debug: debug, isStmt: true);
     final rawValue = result.rows.first[sqlValue];
     if (rawValue == null) return 0.0;
     if (rawValue is num) return rawValue.toDouble();
@@ -446,6 +400,7 @@ class MysqlUtils {
   /// await db.getAll(
   ///   table: 'table',
   ///   fields: '*',
+  ///   excludeFields: 'id,name',
   ///   group: 'name',
   ///   having: 'name',
   ///   order: 'id desc',
@@ -465,6 +420,7 @@ class MysqlUtils {
   Future<List<dynamic>> getAll({
     required String table,
     String fields = '*',
+    String excludeFields = '',
     where = const {},
     String order = '',
     dynamic limit = '',
@@ -480,11 +436,9 @@ class MysqlUtils {
     table = _tableParse(table);
     limit = _limitParse(limit);
 
-    String _sql =
-        'SELECT $fields FROM $table ${_whereAndValues.first} $group $having $order $limit';
+    String _sql = 'SELECT $fields FROM $table ${_whereAndValues.first} $group $having $order $limit';
 
-    ResultFormat results = await query(_sql,
-        debug: debug, whereValues: _whereAndValues.last, isStmt: true);
+    ResultFormat results = await query(_sql, debug: debug, whereValues: _whereAndValues.last, isStmt: true, excludeFields: excludeFields);
 
     if (results.numOfRows > 0) {
       return results.rows;
@@ -497,6 +451,7 @@ class MysqlUtils {
   /// await db.getOne(
   ///   table: 'table',
   ///   fields: '*',
+  ///   excludeFields: 'id,name',
   ///   group: 'name',
   ///   having: 'name',
   ///   order: 'id desc',
@@ -515,6 +470,7 @@ class MysqlUtils {
   Future<Map> getOne({
     required String table,
     String fields = '*',
+    String excludeFields = '',
     where = const {},
     String group = '',
     String having = '',
@@ -524,6 +480,7 @@ class MysqlUtils {
     List<dynamic> res = await getAll(
       table: table,
       fields: fields,
+      excludeFields: excludeFields,
       where: where,
       group: group,
       having: having,
@@ -599,22 +556,19 @@ class MysqlUtils {
               if (value.length < 2 || value[1] is! List) break;
               final list = value[1] as List;
               final placeholders = List.filled(list.length, '?').join(', ');
-              conditions.add(
-                  '`$key` ${op == 'in' ? 'IN' : 'NOT IN'} ($placeholders)');
+              conditions.add('`$key` ${op == 'in' ? 'IN' : 'NOT IN'} ($placeholders)');
               values.addAll(list.map(sqlEscapeString));
               break;
 
             case 'between':
             case 'notbetween':
               if (value.length == 3) {
-                conditions.add(
-                    '`$key` ${op == 'between' ? 'BETWEEN' : 'NOT BETWEEN'} ? AND ?');
+                conditions.add('`$key` ${op == 'between' ? 'BETWEEN' : 'NOT BETWEEN'} ? AND ?');
                 values.addAll([value[1], value[2]]);
               } else if (value.length == 2 && value[1] is String) {
                 final parts = (value[1] as String).split(',');
                 if (parts.length == 2) {
-                  conditions.add(
-                      '`$key` ${op == 'between' ? 'BETWEEN' : 'NOT BETWEEN'} ? AND ?');
+                  conditions.add('`$key` ${op == 'between' ? 'BETWEEN' : 'NOT BETWEEN'} ? AND ?');
                   values.addAll(parts);
                 }
               }
@@ -668,6 +622,7 @@ class MysqlUtils {
   Future<ResultFormat> query(
     String sql, {
     List whereValues = const [],
+    String excludeFields = '',
     debug = false,
     bool isStmt = false,
   }) async {
@@ -687,24 +642,19 @@ class MysqlUtils {
       final isPool = _settings.pool;
       late IResultSet resultSet;
       if (isStmt) {
-        final stmt = isPool
-            ? await (connection as MySQLConnectionPool).prepare(sql)
-            : await (connection as MySQLConnection).prepare(sql);
+        final stmt = isPool ? await (connection as MySQLConnectionPool).prepare(sql) : await (connection as MySQLConnection).prepare(sql);
         try {
           resultSet = await stmt.execute(whereValues);
         } finally {
           // await stmt.deallocate();
         }
       } else {
-        resultSet = isPool
-            ? await (connection as MySQLConnectionPool).execute(sql)
-            : await (connection as MySQLConnection).execute(sql);
+        resultSet = isPool ? await (connection as MySQLConnectionPool).execute(sql) : await (connection as MySQLConnection).execute(sql);
       }
-      return ResultFormat.from(resultSet);
+      return ResultFormat.from(resultSet, excludeFields: excludeFields);
     } catch (e, stackTrace) {
       // Enhanced error handling
-      final errorMsg =
-          'Query failed: $sql\nError: $e\nStack trace: $stackTrace';
+      final errorMsg = 'Query failed: $sql\nError: $e\nStack trace: $stackTrace';
       _errorLog(errorMsg);
 
       // Attempt to rollback if in transaction
@@ -718,8 +668,7 @@ class MysqlUtils {
   }
 
   ///query multi
-  Future<List<int>> queryMulti(String sql, Iterable<List<Object?>> values,
-      {debug = false}) async {
+  Future<List<int>> queryMulti(String sql, Iterable<List<Object?>> values, {debug = false}) async {
     var queryStr = '$sql $values';
     queryTimes++;
     if (debug || _settings.debug) _sqlLog(queryStr);
@@ -784,18 +733,36 @@ class ResultFormat {
     required this.lastInsertID,
     required this.rowsStream,
   });
-  ResultFormat.from(IResultSet results) {
+  ResultFormat.from(IResultSet results, {String excludeFields = ''}) {
     List _rows = [];
     List _cols = [];
     List _rowsAssoc = [];
+    List<String> _excludeFields = [];
+    if (excludeFields != '') {
+      excludeFields.split(',').map((element) => element.trim()).toList();
+    }
     if (results.rows.isNotEmpty) {
       results.rows.forEach((e) {
-        _rows.add(e.typedAssoc());
+        if (_excludeFields.isEmpty) {
+          _rows.add(e.typedAssoc());
+        } else {
+          Map _row = e.typedAssoc();
+          _row.removeWhere((key, value) => _excludeFields.contains(key));
+          _rows.add(_row);
+        }
         _rowsAssoc.add(e);
       });
     }
     if (results.cols.isNotEmpty) {
-      results.cols.forEach((e) => _cols.add({'name': e.name, 'type': e.type}));
+      if (_excludeFields.isEmpty) {
+        results.cols.forEach((e) => _cols.add({'name': e.name, 'type': e.type}));
+      } else {
+        results.cols.forEach((e) {
+          if (!_excludeFields.contains(e.name)) {
+            _cols.add({'name': e.name, 'type': e.type});
+          }
+        });
+      }
     }
     cols = _cols;
     rows = _rows;

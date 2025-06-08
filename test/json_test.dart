@@ -60,14 +60,15 @@ void main() {
   test('Execute: getOne json', () async {
     var req1 = await db.getOne(
       table: 'test_data4',
-      fields: 'json_col',
+      fields: '*',
     );
     expect(req1['json_col']['json'], equals('json_value'));
   });
   test('Execute: getOne blob', () async {
     var req1 = await db.getOne(
       table: 'test_data4',
-      fields: 'blob_col',
+      fields: '*',
+      excludeFields: 'json_col',
     );
     expect(req1['blob_col'], equals([1, 2, 3, 4, 5]));
   });

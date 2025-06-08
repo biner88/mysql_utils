@@ -108,6 +108,7 @@ print(res);
 var row = await db.getOne(
   table: 'table',
   fields: '*',
+  // excludeFields: 'telphone,image',
   //group: 'name',
   //having: 'name',
   //order: 'id desc',
@@ -138,6 +139,7 @@ print(row);
 var row = await db.getAll(
   table: 'table',
   fields: '*',
+  // excludeFields: 'telphone,image',
   //group: 'name',
   //having: 'name',
   //order: 'id desc',

@@ -121,6 +121,7 @@ Query one data
 var row = await db.getOne(
   table: 'table',
   fields: '*',
+  //excludeFields: 'telphone,image',
   //group: 'name',
   //having: 'name',
   //order: 'id desc',
@@ -151,6 +152,7 @@ Query multiple data
 var row = await db.getAll(
   table: 'table',
   fields: '*',
+  //excludeFields: 'telphone,image',
   //group: 'name',
   //having: 'name',
   //order: 'id desc',

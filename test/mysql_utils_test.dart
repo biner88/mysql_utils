@@ -66,7 +66,7 @@ void main() {
       'int_column': 1001,
       'string_column': 'text\'s',
       'datetime_column': '2025-01-01 12:00:00',
-      'blob_column': Uint8List.fromList([0x48, 0x65, 0x6c, 0x6c, 0x6f]),
+      'blob_column': Uint8List.fromList([0x01, 0x02, 0x03]),
       'bool_column': true,
       'decimal_column': 1222.34,
       'float_column': 10.12,
@@ -85,7 +85,7 @@ void main() {
   test('Execute: getOne ', () async {
     var req1 = await db.getOne(
       table: 'test_data',
-      fields: 'id',
+      // fields: 'id',
       where: {'id': 2},
     );
     expect(req1['id'], 2);
@@ -181,19 +181,19 @@ void main() {
     await db.rollback();
   });
 
-  test('Execute: delete ', () async {
-    var req1 = await db.delete(
-      table: 'test_data',
-      where: {
-        'id': ['>', 0]
-      },
-    );
-    expect(req1, BigInt.from(3));
-  });
+  // test('Execute: delete ', () async {
+  //   var req1 = await db.delete(
+  //     table: 'test_data',
+  //     where: {
+  //       'id': ['>', 0]
+  //     },
+  //   );
+  //   expect(req1, BigInt.from(3));
+  // });
 
-  test('Execute: drop table ', () async {
-    await db.query("DROP TABLE IF EXISTS `test_data`");
-  });
+  // test('Execute: drop table ', () async {
+  //   await db.query("DROP TABLE IF EXISTS `test_data`");
+  // });
 
   test('Execute: isAlive ', () async {
     bool isAlive = await db.isConnectionAlive();

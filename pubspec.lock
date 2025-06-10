@@ -189,10 +189,10 @@ packages:
     dependency: "direct main"
     description:
       name: mysql_client_plus
-      sha256: "35654fc45957becc1fcbb3149612df2a6adebc888370734895ec614e6b97231a"
+      sha256: a6984b3bcfe3311b1a73d5bd3a8400535b6aa3c74e9ffae3d8aead01256ba89c
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.0"
+    version: "0.1.1"
   node_preamble:
     dependency: transitive
     description:

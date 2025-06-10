@@ -1,6 +1,6 @@
 name: mysql_utils
 description: This is [mysql_client_plus] help library,This makes mysql easier to use and simple.
-version: 2.1.9
+version: 2.1.10
 homepage: https://github.com/biner88/mysql_utils
 repository: https://github.com/biner88/mysql_utils
 issue_tracker: https://github.com/biner88/mysql_utils/issues
@@ -8,7 +8,7 @@ environment:
   sdk: ">=2.12.0 <4.0.0"
 
 dependencies:
-  mysql_client_plus: ^0.1.0
+  mysql_client_plus: ^0.1.1
 dev_dependencies:
   lints: ^5.1.1
   test: ^1.26.0

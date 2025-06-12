@@ -1,6 +1,6 @@
 name: mysql_utils
 description: This is [mysql_client_plus] help library,This makes mysql easier to use and simple.
-version: 2.1.10
+version: 2.1.11
 homepage: https://github.com/biner88/mysql_utils
 repository: https://github.com/biner88/mysql_utils
 issue_tracker: https://github.com/biner88/mysql_utils/issues

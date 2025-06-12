@@ -1,3 +1,7 @@
+## [2.1.11]
+
+* Fix the problem that statements were not released correctly
+
 ## [2.1.10]
 
 * Update mysql_client_plus version to 0.1.1
@@ -124,7 +128,7 @@
 ## [1.0.3]
 
 * Fix Bug [#3](https://github.com/biner88/mysql_utils/issues/3)
-* Add Where `in`,                                                                                                                                    `between`,  `notbetween` and demo.
+* Add Where `in`,                                                                                                                                          `between`,  `notbetween` and demo.
 
 ## [1.0.2]
 

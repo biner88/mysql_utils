@@ -702,7 +702,7 @@ class MysqlUtils {
         try {
           resultSet = await stmt.execute(whereValues);
         } finally {
-          // await stmt.deallocate();
+          await stmt.deallocate();
         }
       } else {
         resultSet = isPool

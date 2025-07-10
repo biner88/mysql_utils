@@ -183,8 +183,21 @@ class MysqlUtils {
     List<String> _setkeys = [];
     List values = [];
     updateData.forEach((key, value) {
-      _setkeys.add('`$key` = ?');
-      values.add(value);
+      if (value is String) {
+        _setkeys.add('`$key` = ?');
+        values.add(value);
+      } else if (value is List) {
+        if (value.length != 2) {
+          throw ('$key value.length!=2');
+        }
+        if (value.first == '+' || value.first == 'inc') {
+          _setkeys.add('`$key` = `$key` + ?');
+          values.add(value.last);
+        } else if (value.first == '-' || value.first == 'dec') {
+          _setkeys.add('`$key` = `$key` - ?');
+          values.add(value.last);
+        }
+      }
     });
     values.addAll(_whereAndValues.last);
 

@@ -212,11 +212,15 @@ await db.update(
     'telphone': '1231',
     'create_time': 12,
     'update_time': 12121212,
-    'email': 'teenagex@dd.com'
+    'email': 'teenagex@dd.com',
+    'view_count': ['inc', 1], //或者 ['+', 1], 
+    'first_view': ['dec', 1]  //或者 ['-', 1], 
   },
   where:{
   'id':1,
 });
+//对应SQL: update table set telphone='1231',create_time=12,update_time=12121212,email='teenagex@dd.com',view_count=view_count+1,first_view=first_view-1 where id=1;
+
 ```
 
 #### delete

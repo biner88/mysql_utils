@@ -37,17 +37,17 @@ packages:
     dependency: transitive
     description:
       name: mysql_client_plus
-      sha256: a6984b3bcfe3311b1a73d5bd3a8400535b6aa3c74e9ffae3d8aead01256ba89c
+      sha256: "92cd4a97a55087e3327ce817448b84b77ee1106f9886b20398185611e40af4b5"
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.1"
+    version: "0.1.2"
   mysql_utils:
     dependency: "direct main"
     description:
       path: ".."
       relative: true
     source: path
-    version: "2.1.9"
+    version: "2.1.12"
   pointycastle:
     dependency: transitive
     description:

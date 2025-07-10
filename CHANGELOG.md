@@ -1,3 +1,15 @@
+## [2.1.12]
+
+* Update mysql_client_plus version to 0.1.2
+* Add update add decrease and increase methods
+
+```
+await db.update(table: 'users', where: 'id = 1', updateData: {
+  'view_count': ['inc', 1], //or ['+', 1], 
+  'first_view': ['dec', 1]  //or ['-', 1], 
+}); 
+```
+
 ## [2.1.11]
 
 * Fix the problem that statements were not released correctly
@@ -128,7 +140,7 @@
 ## [1.0.3]
 
 * Fix Bug [#3](https://github.com/biner88/mysql_utils/issues/3)
-* Add Where `in`,                                                                                                                                          `between`,  `notbetween` and demo.
+* Add Where `in`,                                                                                                                                                     `between`,  `notbetween` and demo.
 
 ## [1.0.2]
 

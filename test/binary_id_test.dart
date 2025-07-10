@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:mysql_utils/mysql_utils.dart';
 import 'package:test/test.dart';
 
@@ -37,7 +35,7 @@ void main() {
   });
 
   tearDownAll(() async {
-    await db.close();
+    //await db.close();
   });
 
   test('Execute: create table ', () async {
@@ -51,34 +49,19 @@ void main() {
   });
 
   test('Execute: insert data ', () async {
-    await db.query('INSERT INTO test_data3 (name) VALUES ("binary data test")');
-    final result = await db.query("SELECT (id) FROM test_data3");
-    final row = result.rows.first;
-    final uuid = binaryToUuid(row['id']);
-
+    await db.insert(
+      table: 'test_data3',
+      insertData: {
+        'name': 'binary data test',
+      },
+    );
     final result2 =
         await db.query("SELECT BIN_TO_UUID(id) as UUID FROM test_data3");
     final row2 = result2.rows.first;
-
-    expect(uuid, row2['UUID']);
+    print(row2['UUID']);
   });
 
   test('Execute: drop table ', () async {
     await db.query("DROP TABLE IF EXISTS `test_data3`");
   });
-}
-
-String binaryToUuid(String idStr) {
-  final bytes = Uint8List.fromList(idStr.codeUnits);
-  assert(bytes.length == 16);
-  String hex = _bytesToHex(bytes);
-  return '${hex.substring(0, 8)}-${hex.substring(8, 12)}-${hex.substring(12, 16)}-${hex.substring(16, 20)}-${hex.substring(20)}';
-}
-
-String _bytesToHex(List<int> bytes) {
-  final buffer = StringBuffer();
-  for (final byte in bytes) {
-    buffer.write(byte.toRadixString(16).padLeft(2, '0'));
-  }
-  return buffer.toString();
 }

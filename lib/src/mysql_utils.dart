@@ -183,10 +183,7 @@ class MysqlUtils {
     List<String> _setkeys = [];
     List values = [];
     updateData.forEach((key, value) {
-      if (value is String) {
-        _setkeys.add('`$key` = ?');
-        values.add(value);
-      } else if (value is List) {
+      if (value is List) {
         if (value.length != 2) {
           throw ('$key value.length!=2');
         }
@@ -197,6 +194,9 @@ class MysqlUtils {
           _setkeys.add('`$key` = `$key` - ?');
           values.add(value.last);
         }
+      } else {
+        _setkeys.add('`$key` = ?');
+        values.add(value);
       }
     });
     values.addAll(_whereAndValues.last);

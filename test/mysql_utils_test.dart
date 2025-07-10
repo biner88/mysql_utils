@@ -88,6 +88,7 @@ void main() {
       // fields: 'id',
       where: {'id': 2},
     );
+    print(req1);
     expect(req1['id'], 2);
   });
 
@@ -97,6 +98,7 @@ void main() {
       fields: 'id',
       where: {'int_column': 1001},
     );
+    print(req1);
     expect(req1.length, 3);
   });
 
@@ -113,6 +115,19 @@ void main() {
       where: {'id': 3},
     );
     expect(req2, BigInt.from(1));
+  });
+  test('Execute: urdu arabic', () async {
+    final textData = 'السلام علیکم';
+    await db.update(
+      table: 'test_data',
+      updateData: {'string_column': textData},
+      where: {'id': 2},
+    );
+    var req2 = await db.getOne(
+      table: 'test_data',
+      where: {'id': 2},
+    );
+    expect(req2['string_column'], textData);
   });
 
   test('Execute: count ', () async {
@@ -181,19 +196,19 @@ void main() {
     await db.rollback();
   });
 
-  // test('Execute: delete ', () async {
-  //   var req1 = await db.delete(
-  //     table: 'test_data',
-  //     where: {
-  //       'id': ['>', 0]
-  //     },
-  //   );
-  //   expect(req1, BigInt.from(3));
-  // });
+  test('Execute: delete ', () async {
+    var req1 = await db.delete(
+      table: 'test_data',
+      where: {
+        'id': ['>', 0]
+      },
+    );
+    expect(req1, BigInt.from(3));
+  });
 
-  // test('Execute: drop table ', () async {
-  //   await db.query("DROP TABLE IF EXISTS `test_data`");
-  // });
+  test('Execute: drop table ', () async {
+    await db.query("DROP TABLE IF EXISTS `test_data`");
+  });
 
   test('Execute: isAlive ', () async {
     bool isAlive = await db.isConnectionAlive();

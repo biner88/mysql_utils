@@ -1,3 +1,5 @@
+## [2.1.13]
+* Update mysql_client_plus version to 0.1.3
 ## [2.1.12]
 
 * Update mysql_client_plus version to 0.1.2

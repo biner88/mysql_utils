@@ -74,7 +74,7 @@ void main() {
       'date_column': DateTime.now(),
       'time_column': '15:30:45',
       'year_column': DateTime.now().year,
-      'json_column': '{"name": "mysql_utils"}'
+      'json_column': '{"name": "mysql_utils"}',
     };
     var req1 = await db.insert(table: 'test_data', insertData: data);
     expect(req1, BigInt.one);
@@ -123,10 +123,7 @@ void main() {
       updateData: {'string_column': textData},
       where: {'id': 2},
     );
-    var req2 = await db.getOne(
-      table: 'test_data',
-      where: {'id': 2},
-    );
+    var req2 = await db.getOne(table: 'test_data', where: {'id': 2});
     expect(req2['string_column'], textData);
   });
 
@@ -135,7 +132,7 @@ void main() {
       table: 'test_data',
       fields: 'int_column',
       where: {
-        'id': ['>', 0]
+        'id': ['>', 0],
       },
     );
     expect(req1, 3);
@@ -146,7 +143,7 @@ void main() {
       table: 'test_data',
       fields: 'int_column',
       where: {
-        'id': ['>', 0]
+        'id': ['>', 0],
       },
     );
     expect(req1, 1002.0);
@@ -157,7 +154,7 @@ void main() {
       table: 'test_data',
       fields: 'int_column',
       where: {
-        'id': ['>', 0]
+        'id': ['>', 0],
       },
     );
     expect(req1, 1001);
@@ -168,7 +165,7 @@ void main() {
       table: 'test_data',
       fields: 'int_column',
       where: {
-        'id': ['>', 0]
+        'id': ['>', 0],
       },
     );
     expect(req1, 1003);
@@ -189,7 +186,7 @@ void main() {
     var req1 = await db.delete(
       table: 'test_data',
       where: {
-        'id': ['>', 0]
+        'id': ['>', 0],
       },
     );
     expect(req1, BigInt.from(3));
@@ -200,7 +197,7 @@ void main() {
     var req1 = await db.delete(
       table: 'test_data',
       where: {
-        'id': ['>', 0]
+        'id': ['>', 0],
       },
     );
     expect(req1, BigInt.from(3));

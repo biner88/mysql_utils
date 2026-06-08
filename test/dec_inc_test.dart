@@ -30,10 +30,7 @@ void main() {
     ''');
     await db.insert(
       table: 'test_data6',
-      insertData: {
-        'increase_col': 1,
-        'decrease_col': 1,
-      },
+      insertData: {'increase_col': 1, 'decrease_col': 1},
     );
   });
 
@@ -42,7 +39,7 @@ void main() {
       table: 'test_data6',
       updateData: {
         'increase_col': ['+', 1],
-        'decrease_col': ['-', 1]
+        'decrease_col': ['-', 1],
       },
       where: {'id': 1},
     );

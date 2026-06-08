@@ -51,12 +51,11 @@ void main() {
   test('Execute: insert data ', () async {
     await db.insert(
       table: 'test_data3',
-      insertData: {
-        'name': 'binary data test',
-      },
+      insertData: {'name': 'binary data test'},
     );
-    final result2 =
-        await db.query("SELECT BIN_TO_UUID(id) as UUID FROM test_data3");
+    final result2 = await db.query(
+      "SELECT BIN_TO_UUID(id) as UUID FROM test_data3",
+    );
     final row2 = result2.rows.first;
     print(row2['UUID']);
   });

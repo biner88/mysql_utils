@@ -53,18 +53,18 @@ void main() {
   });
 
   test('Execute: insert data ', () async {
-    await db.insert(table: 'test_data4', insertData: {
-      'json_col': {'json': 'json_value'},
-      'text_col':
-          'You can\'t have a better tomorrow if you are thinking about yesterday all the time.',
-      'blob_col': Uint8List.fromList([1, 2, 3, 4, 5]),
-    });
+    await db.insert(
+      table: 'test_data4',
+      insertData: {
+        'json_col': {'json': 'json_value'},
+        'text_col':
+            'You can\'t have a better tomorrow if you are thinking about yesterday all the time.',
+        'blob_col': Uint8List.fromList([1, 2, 3, 4, 5]),
+      },
+    );
   });
   test('Execute: getOne json', () async {
-    var req1 = await db.getOne(
-      table: 'test_data4',
-      fields: '*',
-    );
+    var req1 = await db.getOne(table: 'test_data4', fields: '*');
     print(req1['json_col']);
     expect(req1['json_col']['json'], equals('json_value'));
   });
@@ -85,9 +85,11 @@ void main() {
     );
     print(req1['text_col']);
     expect(
-        req1['text_col'],
-        equals(
-            'You can\'t have a better tomorrow if you are thinking about yesterday all the time.'));
+      req1['text_col'],
+      equals(
+        'You can\'t have a better tomorrow if you are thinking about yesterday all the time.',
+      ),
+    );
   });
   test('Execute: drop table ', () async {
     await db.query("DROP TABLE IF EXISTS `test_data4`");

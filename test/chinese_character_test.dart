@@ -49,86 +49,121 @@ void main() {
   });
 
   test('Execute: insert data ', () async {
-    Map<String, dynamic> data = {
-      'string_column': '一大\'串中文',
-    };
+    Map<String, dynamic> data = {'string_column': '一大\'串中文'};
     var req1 = await db.insert(table: 'test_data2', insertData: data);
     expect(req1, BigInt.one);
-    Map<String, dynamic> data2 = {
-      'string_column': 'mysql 测试',
-    };
+    Map<String, dynamic> data2 = {'string_column': 'mysql 测试'};
     var req2 = await db.insert(table: 'test_data2', insertData: data2);
     expect(req2, BigInt.two);
   });
 
   test('Execute: getOne Where', () async {
     var reqEq = await db.getOne(
-        table: 'test_data2', where: {'string_column': "一大\'串中文", 'id': 1});
+      table: 'test_data2',
+      where: {'string_column': "一大\'串中文", 'id': 1},
+    );
     expect(reqEq['id'], 1);
     //
-    var reqIn = await db.getOne(table: 'test_data2', where: {
-      'id': [
-        'in',
-        [1, 2]
-      ]
-    });
+    var reqIn = await db.getOne(
+      table: 'test_data2',
+      where: {
+        'id': [
+          'in',
+          [1, 2],
+        ],
+      },
+    );
     expect(reqIn['id'], 1);
-    var reqNotIn = await db.getOne(table: 'test_data2', where: {
-      'id': [
-        'notin',
-        [0, 3]
-      ]
-    });
+    var reqNotIn = await db.getOne(
+      table: 'test_data2',
+      where: {
+        'id': [
+          'notin',
+          [0, 3],
+        ],
+      },
+    );
     expect(reqNotIn['id'], 1);
-    var reqBetween = await db.getOne(table: 'test_data2', where: {
-      'id': ['between', 1, 4]
-      // 'id': ['between', '1,4'] // Deprecated
-    });
+    var reqBetween = await db.getOne(
+      table: 'test_data2',
+      where: {
+        'id': ['between', 1, 4],
+        // 'id': ['between', '1,4'] // Deprecated
+      },
+    );
     expect(reqBetween['id'], 1);
-    var reqNotBetween = await db.getOne(table: 'test_data2', where: {
-      'id': ['notbetween', 3, 4]
-      // 'id': ['notbetween', '1,4'] // Deprecated
-    });
+    var reqNotBetween = await db.getOne(
+      table: 'test_data2',
+      where: {
+        'id': ['notbetween', 3, 4],
+        // 'id': ['notbetween', '1,4'] // Deprecated
+      },
+    );
     expect(reqNotBetween['id'], 1);
-    var reqLike = await db.getOne(table: 'test_data2', where: {
-      'string_column': ['like', '%串%']
-    });
+    var reqLike = await db.getOne(
+      table: 'test_data2',
+      where: {
+        'string_column': ['like', '%串%'],
+      },
+    );
     expect(reqLike['id'], 1);
-    var reqNotLike = await db.getOne(table: 'test_data2', where: {
-      'string_column': ['notlike', '%mysql%']
-    });
+    var reqNotLike = await db.getOne(
+      table: 'test_data2',
+      where: {
+        'string_column': ['notlike', '%mysql%'],
+      },
+    );
     expect(reqNotLike['id'], 1);
-    var reqEq0 = await db.getOne(table: 'test_data2', where: {
-      'string_column': ['=', '一大\'串中文']
-    });
+    var reqEq0 = await db.getOne(
+      table: 'test_data2',
+      where: {
+        'string_column': ['=', '一大\'串中文'],
+      },
+    );
     expect(reqEq0['id'], 1);
     //
-    var reqEq1 = await db
-        .getOne(table: 'test_data2', where: {'string_column': '一大\'串中文'});
+    var reqEq1 = await db.getOne(
+      table: 'test_data2',
+      where: {'string_column': '一大\'串中文'},
+    );
     expect(reqEq1['id'], 1);
     //
-    var reqEq2 = await db
-        .getOne(table: 'test_data2', where: {'string_column': '一大\'串中文'});
+    var reqEq2 = await db.getOne(
+      table: 'test_data2',
+      where: {'string_column': '一大\'串中文'},
+    );
     expect(reqEq2['string_column'], '一大\'串中文');
     //
-    var reqGt = await db.getOne(table: 'test_data2', where: {
-      'id': ['>', 0]
-    });
+    var reqGt = await db.getOne(
+      table: 'test_data2',
+      where: {
+        'id': ['>', 0],
+      },
+    );
     expect(reqGt['id'], 1);
     //
-    var reqLt = await db.getOne(table: 'test_data2', where: {
-      'id': ['<', 2]
-    });
+    var reqLt = await db.getOne(
+      table: 'test_data2',
+      where: {
+        'id': ['<', 2],
+      },
+    );
     expect(reqLt['id'], 1);
     //
-    var reqNotEq1 = await db.getOne(table: 'test_data2', where: {
-      'id': ['<>', 2]
-    });
+    var reqNotEq1 = await db.getOne(
+      table: 'test_data2',
+      where: {
+        'id': ['<>', 2],
+      },
+    );
     expect(reqNotEq1['id'], 1);
     //
-    var reqNotEq2 = await db.getOne(table: 'test_data2', where: {
-      'id': ['!=', 2]
-    });
+    var reqNotEq2 = await db.getOne(
+      table: 'test_data2',
+      where: {
+        'id': ['!=', 2],
+      },
+    );
     expect(reqNotEq2['id'], 1);
     // sql
     var reqSql = await db.getOne(table: 'test_data2', where: {'_SQL': 'id<2'});

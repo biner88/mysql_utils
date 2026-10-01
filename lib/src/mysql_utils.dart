@@ -307,8 +307,7 @@ class MysqlUtils {
     final values = insertData.values.toList();
     final placeholders = List.filled(fields.length, '?');
 
-    final sql =
-        '${replace ? 'REPLACE' : 'INSERT'} INTO $table '
+    final sql = '${replace ? 'REPLACE' : 'INSERT'} INTO $table '
         '(${fields.join(',')}) VALUES (${placeholders.join(',')})';
 
     final result = await query(

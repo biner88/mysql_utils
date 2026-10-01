@@ -47,7 +47,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "2.1.12"
+    version: "2.1.14"
   pointycastle:
     dependency: transitive
     description:

@@ -1,3 +1,8 @@
+## [2.1.14]
+
+* Keep pooled queries and prepared statements on a leased connection.
+* Await all executions in `queryMulti` before releasing its statement.
+
 ## [2.1.13]
 * Update mysql_client_plus version to 0.1.3
 ## [2.1.12]

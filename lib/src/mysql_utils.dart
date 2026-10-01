@@ -738,22 +738,39 @@ class MysqlUtils {
       }
     }
     try {
-      final connection = _settings.pool ? await poolConn : await singleConn;
-      final isPool = _settings.pool;
       late IResultSet resultSet;
-      if (isStmt) {
-        final stmt = isPool
-            ? await (connection as MySQLConnectionPool).prepare(sql)
-            : await (connection as MySQLConnection).prepare(sql);
+      if (_settings.pool) {
+        Object? queryError;
+        StackTrace? queryStackTrace;
+        await (await poolConn).withConnection((connection) async {
+          try {
+            if (isStmt) {
+              final stmt = await connection.prepare(sql);
+              try {
+                resultSet = await stmt.execute(whereValues);
+              } finally {
+                await stmt.deallocate();
+              }
+            } else {
+              resultSet = await connection.execute(sql);
+            }
+          } catch (error, stackTrace) {
+            queryError = error;
+            queryStackTrace = stackTrace;
+          }
+        });
+        if (queryError != null) {
+          await Future<void>.error(queryError!, queryStackTrace);
+        }
+      } else if (isStmt) {
+        final stmt = await (await singleConn).prepare(sql);
         try {
           resultSet = await stmt.execute(whereValues);
         } finally {
           await stmt.deallocate();
         }
       } else {
-        resultSet = isPool
-            ? await (connection as MySQLConnectionPool).execute(sql)
-            : await (connection as MySQLConnection).execute(sql);
+        resultSet = await (await singleConn).execute(sql);
       }
       return ResultFormat.from(resultSet, excludeFields: excludeFields);
     } catch (e, stackTrace) {
@@ -781,17 +798,38 @@ class MysqlUtils {
     var queryStr = '$sql $values';
     queryTimes++;
     if (debug || _settings.debug) _sqlLog(queryStr);
-    PreparedStmt stmt;
-    if (_settings.pool) {
-      stmt = await (await poolConn).prepare(sql);
-    } else {
-      stmt = await (await singleConn).prepare(sql);
-    }
     List<int> res = [];
-    values.forEach((val) async {
-      res.add((await stmt.execute(val)).lastInsertID.toInt());
-    });
-    await stmt.deallocate();
+    if (_settings.pool) {
+      Object? queryError;
+      StackTrace? queryStackTrace;
+      await (await poolConn).withConnection((connection) async {
+        try {
+          final stmt = await connection.prepare(sql);
+          try {
+            for (final val in values) {
+              res.add((await stmt.execute(val)).lastInsertID.toInt());
+            }
+          } finally {
+            await stmt.deallocate();
+          }
+        } catch (error, stackTrace) {
+          queryError = error;
+          queryStackTrace = stackTrace;
+        }
+      });
+      if (queryError != null) {
+        await Future<void>.error(queryError!, queryStackTrace);
+      }
+    } else {
+      final stmt = await (await singleConn).prepare(sql);
+      try {
+        for (final val in values) {
+          res.add((await stmt.execute(val)).lastInsertID.toInt());
+        }
+      } finally {
+        await stmt.deallocate();
+      }
+    }
     return res;
   }
 
